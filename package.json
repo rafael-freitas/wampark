@@ -1,0 +1,46 @@
+{
+  "name": "wampark",
+  "version": "1.0.0",
+  "description": "Node.js Application Architecture for big WAMP (Web Application Message Protocol) based applications and microservices",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon --exec babel-node --extensions .mjs server",
+    "build": "babel -x .mjs,.js src -d dist --copy-files"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rafael-freitas/wampark.git"
+  },
+  "keywords": [
+    "wamp",
+    "microservices",
+    "application",
+    "architecture",
+    "crossbar",
+    "nodejs"
+  ],
+  "author": "Rafael Freitas Lima",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rafael-freitas/wampark/issues"
+  },
+  "homepage": "https://github.com/rafael-freitas/wampark#readme",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-plugin-syntax-object-rest-spread": "^6.13.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-register": "^6.26.0",
+    "chai": "^4.2.0",
+    "jsdoc": "^3.5.5",
+    "mocha": "^7.0.0",
+    "nodemon": "^2.0.2"
+  },
+  "dependencies": {
+    "autobahn": "^20.9.2",
+    "cluster": "^0.7.7",
+    "colors": "^1.4.0",
+    "moment": "^2.29.0",
+    "winston": "^3.3.3"
+  }
+}
