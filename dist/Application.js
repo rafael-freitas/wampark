@@ -74,7 +74,8 @@ var Application = /*#__PURE__*/function (_EventEmitter) {
     value: function connectWampServer() {
       var _this2 = this;
 
-      this.wamp = (0, _wampAdapter.connect)({
+      var settings = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      this.wamp = (0, _wampAdapter.connect)(Object.assign({
         url: this.WAMP_URL,
         realm: this.WAMP_REALM,
         authid: this.WAMP_AUTHID,
@@ -90,7 +91,7 @@ var Application = /*#__PURE__*/function (_EventEmitter) {
 
           _this2.currentSession = null;
         }
-      });
+      }, settings));
     }
   }]);
 
