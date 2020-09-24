@@ -27,8 +27,8 @@ export default class Application extends EventEmitter {
     this.wamp = null
   }
 
-  connectWampServer () {
-    this.wamp = connect({
+  connectWampServer (settings = {}) {
+    this.wamp = connect(Object.assign({
       url: this.WAMP_URL,
       realm: this.WAMP_REALM,
       authid: this.WAMP_AUTHID,
@@ -42,6 +42,6 @@ export default class Application extends EventEmitter {
         this.emit('wamp.session.close', reason, details)
         this.currentSession = null
       }
-    })
+    }, settings))
   }
 }
