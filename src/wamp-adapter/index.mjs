@@ -109,8 +109,7 @@ function createConnection (settings) {
   assert(typeof settings.realm !== 'undefined', 'Informe a `realm` do servidor WAMP em `WAMP_REALM`')
   assert(typeof settings.authid !== 'undefined', 'Informe o `authid` do servidor WAMP em `WAMP_AUTHID`')
   assert(typeof settings.authpass !== 'undefined', 'Informe o `authpass` do servidor WAMP em `WAMP_AUTHPASS`')
-  assert(typeof settings.onopen !== 'function', '`onopen` must to be a Function')
-  assert(typeof settings.onclose !== 'function', '`onclose` must to be a Function')
+
 
   settings = Object.assign({ onchallenge }, settings)
   const connection = new autobahn.Connection(settings)

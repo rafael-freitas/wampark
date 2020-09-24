@@ -122,8 +122,6 @@ function createConnection(settings) {
   (0, _assert["default"])(typeof settings.realm !== 'undefined', 'Informe a `realm` do servidor WAMP em `WAMP_REALM`');
   (0, _assert["default"])(typeof settings.authid !== 'undefined', 'Informe o `authid` do servidor WAMP em `WAMP_AUTHID`');
   (0, _assert["default"])(typeof settings.authpass !== 'undefined', 'Informe o `authpass` do servidor WAMP em `WAMP_AUTHPASS`');
-  (0, _assert["default"])(typeof settings.onopen !== 'function', '`onopen` must to be a Function');
-  (0, _assert["default"])(typeof settings.onclose !== 'function', '`onclose` must to be a Function');
   settings = Object.assign({
     onchallenge: onchallenge
   }, settings);
