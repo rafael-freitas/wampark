@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = void 0;
+
 /**
  *   middleware
  *
@@ -6,11 +13,10 @@
  * @date       Feb 13 2018
  * @memberof module:lib/logger
  */
-
-export default {
-  registrationSuccess,
-  registrationFail,
-  middleware: function (logger) {
+var _default = {
+  registrationSuccess: registrationSuccess,
+  registrationFail: registrationFail,
+  middleware: function middleware(logger) {
     Object.assign(logger, {
       wamp: {
         success: registrationSuccess(logger),
@@ -20,6 +26,7 @@ export default {
     return logger;
   }
 };
+exports["default"] = _default;
 
 function registrationSuccess(logger) {
   /**
@@ -37,7 +44,7 @@ function registrationSuccess(logger) {
    */
   return function uriWrapper(route) {
     return function (result) {
-      logger.info(`Procedure <${logger.colors.blue(result.procedure)}> registred - ${logger.ok}`);
+      logger.info("Procedure <".concat(logger.colors.blue(result.procedure), "> registred - ").concat(logger.ok));
       return result;
     };
   };
@@ -59,7 +66,7 @@ function registrationFail(logger) {
    */
   return function uriWrapper(route) {
     return function (err) {
-      logger.error(`Procedure <${logger.colors.blue(route.uri)}> failed: ${JSON.stringify(err)} - ${logger.fail}`);
+      logger.error("Procedure <".concat(logger.colors.blue(route.uri), "> failed: ").concat(JSON.stringify(err), " - ").concat(logger.fail));
       return Promise.reject(err);
     };
   };

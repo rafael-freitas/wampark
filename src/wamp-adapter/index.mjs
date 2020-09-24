@@ -105,9 +105,10 @@ function createConnection (settings) {
       ------------------------------------------------------------------------
   */
   assert(typeof settings !== 'undefined', 'Set `wamp` config on your envoirment')
-  assert(typeof settings.url !== 'undefined', 'Informe a URL do servidor WAMP em `config.wamp.url`')
-  assert(typeof settings.realm !== 'undefined', 'Informe a `realm` do servidor WAMP em `config.wamp.realm`')
-  assert(typeof settings.authid !== 'undefined', 'Informe o `authid` do servidor WAMP em `config.wamp.authid`')
+  assert(typeof settings.url !== 'undefined', 'Informe a URL do servidor WAMP em ``WAMP_URL')
+  assert(typeof settings.realm !== 'undefined', 'Informe a `realm` do servidor WAMP em `WAMP_REALM`')
+  assert(typeof settings.authid !== 'undefined', 'Informe o `authid` do servidor WAMP em `WAMP_AUTHID`')
+  assert(typeof settings.authpass !== 'undefined', 'Informe o `authpass` do servidor WAMP em `WAMP_AUTHPASS`')
   assert(typeof settings.onopen !== 'function', '`onopen` must to be a Function')
   assert(typeof settings.onclose !== 'function', '`onclose` must to be a Function')
 

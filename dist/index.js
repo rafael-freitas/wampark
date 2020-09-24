@@ -1,7 +1,25 @@
-import Application from './Application';
-import logger, { logname } from 'logger';
-import cluster from 'cluster';
-import os from 'os';
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = void 0;
+
+var _Application = _interopRequireDefault(require("./Application"));
+
+var _logger = _interopRequireDefault(require("./logger"));
+
+var _cluster = _interopRequireDefault(require("cluster"));
+
+var _os = _interopRequireDefault(require("os"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 /**
  * @requires {@link module:lib/apllication.Application}
@@ -19,72 +37,73 @@ import os from 'os';
  * @example
  * import application from '/lib/application'
  */
-
 // utilizar o parametro config.maxClusterForks do CONFIG quando for um numero valido maior que 0, se nao usar o maximo de CPUs
-const TOTAL_CPU_CORES = process.env.CLUSTER_MAX_FORKS || os.cpus().length;
+var TOTAL_CPU_CORES = process.env.CLUSTER_MAX_FORKS || _os["default"].cpus().length;
 
-function createApplication(extraConfigs = {}) {
+function createApplication() {
+  var extraConfigs = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
   // CLONE ENVOIRIMENT VALUES FOR CONFIG
-  const config = Object.assign({}, process.env, extraConfigs);
+  var config = Object.assign({}, process.env, extraConfigs); // default delay is 10 seconds
 
-  // default delay is 10 seconds
   if (typeof config.WAMP_CONNECTION_DELAY === 'undefined') {
     config.WAMP_CONNECTION_DELAY = 10;
-  }
+  } // create a logger default application instance for general logs
 
-  // create a logger default application instance for general logs
-  const log = logger('application');
 
-  // singleton global Application
-  const application = new Application(Object.assign(
-  // copy all envoirment variables and config values into application instance
-  ...config, {
-    logger: name => {
-      return logger(logname(name));
-    }
+  var log = (0, _logger["default"])('application'); // singleton global Application
+
+  var application = new _Application["default"](_objectSpread(_objectSpread({}, config), {}, {
+    logger: _logger["default"]
   }));
 
   if (config.WAMP_AUTOCONNECT) {
-    log.info(`Trying to connect to WAMP SERVER in ${log.colors.yellow(config.WAMP_URL)} on realm: ${log.colors.yellow(config.WAMP_REALM)}`);
-    //   // agendar para depois para que os outros modulos instalem o listener
-    setTimeout(() => {
+    log.info("Trying to connect to WAMP SERVER in ".concat(log.colors.yellow(config.WAMP_URL), " on realm: ").concat(log.colors.yellow(config.WAMP_REALM))); //   // agendar para depois para que os outros modulos instalem o listener
+
+    setTimeout(function () {
       application.connectWampServer();
     }, config.WAMP_CONNECTION_DELAY);
   } else {
     log.warn('WAMP connections is disabled. To enable set true "WAMP_AUTOCONNECT" on config or your envoirement');
   }
+
   return application;
-}
+} // debugger
 
-// debugger
-const application = createApplication();
 
-if (config.CLUSTER_ENABLED) {
-  cluster.setMaxListeners(1000 * 10);
-  if (cluster.isMaster) {
+var application = createApplication();
+
+if (application.CLUSTER_ENABLED) {
+  _cluster["default"].setMaxListeners(1000 * 10);
+
+  if (_cluster["default"].isMaster) {
     console.log('Master process is running');
 
-    cluster.setupMaster({
+    _cluster["default"].setupMaster({
       args: ['--extensions', '.mjs']
-    });
+    }); // Fork workers - save cluster workers on application
 
-    // Fork workers - save cluster workers on application
-    for (let i = 0; i < TOTAL_CPU_CORES; i++) {
-      application.workers.push(cluster.fork());
+
+    for (var i = 0; i < TOTAL_CPU_CORES; i++) {
+      application.workers.push(_cluster["default"].fork());
     }
 
-    cluster.on('exit', (worker, code, signal) => {
-      console.log(`Worker ${worker.process.pid} died with code: ${code}, and signal: ${signal}`);
+    _cluster["default"].on('exit', function (worker, code, signal) {
+      console.log("Worker ".concat(worker.process.pid, " died with code: ").concat(code, ", and signal: ").concat(signal));
       console.log('Starting a new worker');
-      cluster.fork();
-      // remover o worker que morreu
+
+      _cluster["default"].fork(); // remover o worker que morreu
+
+
       if (application.workers.indexOf(worker) !== -1) {
         application.workers.splice(application.workers.indexOf(worker), 1);
       }
     });
   } else {
-    console.log(`Worker ${cluster.worker.id}`);
-    cluster.worker.setMaxListeners(1000 * 10);
+    console.log("Worker ".concat(_cluster["default"].worker.id));
+
+    _cluster["default"].worker.setMaxListeners(1000 * 10);
   }
 }
-export default application;
+
+var _default = application;
+exports["default"] = _default;

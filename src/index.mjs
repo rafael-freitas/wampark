@@ -1,5 +1,5 @@
 import Application from './Application'
-import logger, { logname } from 'logger'
+import logger from './logger'
 import cluster from 'cluster'
 import os from 'os'
 
@@ -36,13 +36,7 @@ function createApplication (extraConfigs = {}) {
   const log = logger('application')
 
   // singleton global Application
-  const application = new Application(Object.assign(
-    // copy all envoirment variables and config values into application instance
-    ...config, {
-    logger: name => {
-      return logger(logname(name))
-    }
-  }))
+  const application = new Application({ ...config, logger })
 
   if (config.WAMP_AUTOCONNECT) {
     log.info(`Trying to connect to WAMP SERVER in ${log.colors.yellow(config.WAMP_URL)} on realm: ${log.colors.yellow(config.WAMP_REALM)}`)
@@ -59,7 +53,7 @@ function createApplication (extraConfigs = {}) {
 // debugger
 const application = createApplication()
 
-if (config.CLUSTER_ENABLED) {
+if (application.CLUSTER_ENABLED) {
   cluster.setMaxListeners(1000 * 10)
   if (cluster.isMaster) {
     console.log('Master process is running')

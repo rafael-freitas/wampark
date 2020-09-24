@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = void 0;
+
 /**
  * Tipos de erros
  * @memberof module:lib/errors
@@ -12,7 +19,7 @@
  * @property {Number} MESSAGE Mensagem de erro. (O erro deve ser tratado como mensagem no frontend)
  * @property {Number} PROC_CANCELED Quando o processo for cancelado pelo usuário, não será necessario exibir mensagem de error
  */
-const ErrorTypes = {
+var ErrorTypes = {
   RUNTIME: 0,
   SYNTAX: 1,
   LOGIC: 2,
@@ -22,5 +29,5 @@ const ErrorTypes = {
   MESSAGE: 101,
   PROC_CANCELED: 200
 };
-
-export default ErrorTypes;
+var _default = ErrorTypes;
+exports["default"] = _default;

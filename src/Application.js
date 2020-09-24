@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
-import errors from '../error'
-import { connect } from 'wamp-adapter'
+import errors from './errors'
+import { connect } from './wamp-adapter'
 
 /**
  * @requires events

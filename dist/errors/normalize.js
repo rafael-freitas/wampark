@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = void 0;
+
 /**
  * @description
  * addToJsonFunction - Adiciona o metodo toJSON() em um objeto nativo Error
@@ -18,4 +25,5 @@ function addToJsonFunction(err) {
   }
 }
 
-export default addToJsonFunction;
+var _default = addToJsonFunction;
+exports["default"] = _default;

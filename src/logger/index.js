@@ -42,7 +42,7 @@ import moment from 'moment'
 import colors from 'colors/safe'
 // import wampMiddleware from './wamp-middleware'
 
-const { logs: logsConfig } = config
+const { combine, timestamp, label, printf } = winston.format
 
 /**
  * Interface de log
@@ -102,9 +102,9 @@ export function logname (dirname) {
 }
 
 
-function timestamp () {
-  return moment().format('YYYY-MM-DD H:mm:ss')
-}
+// function timestamp () {
+//   return moment().format('YYYY-MM-DD H:mm:ss')
+// }
 
 /**
  * Cria um *container* de log
@@ -120,20 +120,49 @@ function timestamp () {
 function createLogger (container = 'app') {
   const transports = []
 
-  transports.push(new winston.transports.Console({
-    timestamp,
-    formatter,
+  // transports.push(new winston.transports.Console({
+  //   timestamp,
+  //   formatter,
+  //   colorize: true,
+  //   level: 'data'
+  //   // name: level+'-console'
+  // }))
+
+  const formatterFile = printf(({ level, message, label, timestamp }) => {
+    return `${timestamp} [Worker ${WORKER_ID}] [${label}] ${level}: ${message}`;
+  })
+  
+  const logger = winston.createLogger({
+    level: 'info',
+    // format: winston.format.json(),
+    format: combine(
+      label({ label: container }),
+      timestamp(),
+      formatterFile
+    ),
+    defaultMeta: { service: 'user-service' },
+    transports: [
+      //
+      // - Write all logs with level `error` and below to `error.log`
+      // - Write all logs with level `info` and below to `combined.log`
+      //
+      new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
+      new winston.transports.File({ filename: 'logs/combined.log' }),
+    ],
+  })
+
+  logger.add(new winston.transports.Console({
     colorize: true,
-    level: 'data'
-    // name: level+'-console'
+    colors: loggerConfig.colors,
+    format: formatterConsole,
   }))
 
-  const logger = new winston.Logger({
-    exitOnError: false,
-    transports: transports,
-    levels: loggerConfig.levels,
-    colors: loggerConfig.colors
-  })
+  // const logger = new winston.createLogger({
+  //   exitOnError: false,
+  //   transports: transports,
+  //   levels: loggerConfig.levels,
+  //   colors: loggerConfig.colors
+  // })
   // logger.on('error', function (err) { /* Do Something */ })
   logger.emitErrs = true
   // logger.setLevels(winston.config.syslog.levels)
@@ -153,10 +182,11 @@ function createLogger (container = 'app') {
   // instalar o log.wamp.success e log.wamp.fail
   // wampMiddleware.middleware(logger)
 
-  function formatter (options) {
+  const formatterConsole = printf((options) => {
+    // return `${timestamp} [${label}] ${level}: ${message}`;
     // Return string will be passed to logger.
     const level = colors[options.level]
-    const log = [colors.gray(options.timestamp())]
+    const log = [colors.gray(timestamp())]
 
     if (WORKER_ID !== MAIN_WORKER) {
       log.push(colors.gray(['[Worker ', WORKER_ID, ']'].join('')))
@@ -174,7 +204,7 @@ function createLogger (container = 'app') {
     }
 
     return log.join(' ')
-  }
+  })
 
   return logger
 }

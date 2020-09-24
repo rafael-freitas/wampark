@@ -1,6 +1,30 @@
-import ErrorTypes from './ErrorTypes';
-import ApplicationError from './ApplicationError';
-import normalize from './normalize';
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.create = createErrorWapper;
+exports.normalize = normalizeWrapper;
+Object.defineProperty(exports, "ErrorTypes", {
+  enumerable: true,
+  get: function get() {
+    return _ErrorTypes["default"];
+  }
+});
+Object.defineProperty(exports, "ApplicationError", {
+  enumerable: true,
+  get: function get() {
+    return _ApplicationError["default"];
+  }
+});
+
+var _ErrorTypes = _interopRequireDefault(require("./ErrorTypes"));
+
+var _ApplicationError = _interopRequireDefault(require("./ApplicationError"));
+
+var _normalize = _interopRequireDefault(require("./normalize"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 /**
  * @requires {@link module:lib/errors.ErrorTypes}
@@ -25,29 +49,28 @@ import normalize from './normalize';
 * // criar uma instancia de erro
 * error('E03: Ocorreu um erro', errNativeExceptionObject ) // cria o erro PREFIXE03
 */
-function createErrorWapper(family, ErrorClass = 'ApplicationError') {
+function createErrorWapper(family) {
+  var ErrorClass = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'ApplicationError';
   return function (description, details) {
-    const err = new ApplicationError(description, details);
+    var err = new _ApplicationError["default"](description, details);
     err.nameError = ErrorClass;
     err.setFamily(family);
     return err;
   };
 }
-
 /**
  * normalizeWrapper - adiciona o metodo toJSON em uma instancia de Error
  * @memberof lib.errors
  * @param {Error} err Se nao for uma instancia de Error sera ignorado
  * @returns {Promise} Retorna uma promise rejeitada
  */
+
+
 function normalizeWrapper(err) {
-  normalize(err);
+  (0, _normalize["default"])(err);
   return Promise.reject(err);
 }
-
 /*
     exports
     ------------------------------------------------------------------------
  */
-
-export { createErrorWapper as create, normalizeWrapper as normalize, ErrorTypes, ApplicationError };
