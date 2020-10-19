@@ -158,11 +158,11 @@ function createConnection(settings) {
   function onCloseConnection(reason, details) {
     switch (reason) {
       case 'unreachable':
-        log.error("N\xE3o \xE9 possivel conectar ao crossbar.io: \"unreachable\" - ".concat(log.fail), details);
+        log.error("Fail to connect to crossbar.io: \"unreachable\" - ".concat(log.fail), details);
         break;
 
       default:
-        log.warn("Conex\xE3o com o crossbar.io foi fechada: ".concat(reason, "'"), details);
+        log.warn("The connection to crossbar.io was closed: ".concat(reason, "'"), details);
     }
 
     settings.onclose(reason, details); // application.emit('wamp.session.close', reason, details)

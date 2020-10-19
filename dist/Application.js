@@ -9,6 +9,8 @@ var _events = require("events");
 
 var _errors = _interopRequireDefault(require("./errors"));
 
+var _logger = _interopRequireDefault(require("./logger"));
+
 var _wampAdapter = require("./wamp-adapter");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
@@ -55,32 +57,77 @@ var Application = /*#__PURE__*/function (_EventEmitter) {
 
     _classCallCheck(this, Application);
 
-    _this = _super.call(this);
+    _this = _super.call(this); // all configuration values
 
-    _this.setMaxListeners(1000 * 10);
+    _this.config = {}; // default log for application
 
-    Object.assign(_assertThisInitialized(_this), {}, properties); // attach Errors interface
+    _this.log = (0, _logger["default"])('application');
+
+    _this.setMaxListeners(1000 * 10); // attach logger and others values as Application instance properties
+
+
+    Object.assign(_assertThisInitialized(_this), {
+      logger: _logger["default"]
+    }, properties); // attach Errors interface as Application instance properties
 
     Object.assign(_assertThisInitialized(_this), _errors["default"]); // Store clusters works
 
     _this.workers = []; // WAMP connection instance
 
-    _this.wamp = null;
+    _this.wampConnection = null; // the current WAMP (crossbar/autobahn) active and connected session
+
+    _this.currentSession = null; // Attached Route instances in your application
+
+    _this.routes = [];
     return _this;
   }
+  /**
+   * Setup the Application with custom properites like config
+   * @param {Object} properties 
+   */
+
 
   _createClass(Application, [{
+    key: "setup",
+    value: function setup(properties) {
+      // just apply new properties for this Application instance
+      Object.assign(this, properties);
+    }
+    /**
+     * Attach the Agent (protocol processor) RPC route for a Crossbar.io session when it's connected
+     * This route is a bridge to link the client application for backend.
+     */
+
+  }, {
+    key: "attachAgentRouteToSession",
+    value: function attachAgentRouteToSession() {
+      console.log('[INFO] Waiting a WAMP session begins to attach an Agent RPC route');
+      this.on('wamp.session.start', function (session, details) {
+        var agentSessionRouteName = "agent.".concat(session.id); // register an Agent RPC procedure for the current session
+
+        session.register(agentSessionRouteName, function (args, kwargs, details) {
+          console.warn("[WARN] Backend Agent is disabled for this backend session (".concat(agentSessionRouteName, ")! Try to call directly"));
+        });
+      });
+    }
+  }, {
     key: "connectWampServer",
     value: function connectWampServer() {
       var _this2 = this;
 
       var settings = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      this.wamp = (0, _wampAdapter.connect)(Object.assign({
-        url: this.WAMP_URL,
-        realm: this.WAMP_REALM,
-        authid: this.WAMP_AUTHID,
-        authpass: this.WAMP_AUTHPASS,
-        authmethods: [typeof this.WAMP_AUTHMETHODS === 'string' ? this.WAMP_AUTHMETHODS.split(',') : 'wampcra'],
+
+      // if exist a opened session ignore. Close the active connection first
+      if (this.currentSession) {
+        return console.warn('[application] There is a active WAMP connection. Close it first!');
+      }
+
+      this.wampConnection = (0, _wampAdapter.connect)(Object.assign({
+        url: this.config.WAMP_URL,
+        realm: this.config.WAMP_REALM,
+        authid: this.config.WAMP_AUTHID,
+        authpass: this.config.WAMP_AUTHPASS,
+        authmethods: [typeof this.config.WAMP_AUTHMETHODS === 'string' ? this.config.WAMP_AUTHMETHODS.split(',') : 'wampcra'],
         onopen: function onopen(session) {
           _this2.emit('wamp.session.start', session);
 
@@ -93,9 +140,26 @@ var Application = /*#__PURE__*/function (_EventEmitter) {
         }
       }, settings));
     }
+    /**
+     * Attach a route for any wamp session starts on application
+     * @param {Route} route 
+     * 
+     * Use:
+     * application.attachRoute(class MyRoute extends Route {})
+     */
+
+  }, {
+    key: "attachRoute",
+    value: function attachRoute(route) {
+      this.on('wamp.session.start', function (session) {
+        route.attach(session);
+      });
+    }
   }]);
 
   return Application;
 }(_events.EventEmitter);
 
-exports["default"] = Application;
+var _default = new Application();
+
+exports["default"] = _default;
