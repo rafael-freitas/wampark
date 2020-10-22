@@ -16,7 +16,7 @@ export default class MyRouteSample extends application.Route {
    * @param details
    */
   async endpoint (args = [], kwargs = {}, details = {}) {
-    const { data, schema } = kwargs
-    return 1
+    const { a, b } = kwargs
+    return 1 + a + b
   }
 }

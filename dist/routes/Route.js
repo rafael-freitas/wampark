@@ -229,7 +229,7 @@ var Route = /*#__PURE__*/function () {
     key: "printLogAttachFail",
     value: function printLogAttachFail(err) {
       var log = this.getLogger();
-      log.error("Route <".concat(log.colors.silly(this.uri), "> falhou: ").concat(JSON.stringify(err), " - ").concat(log.fail));
+      log.error("Route <".concat(log.colors.silly(this.uri), "> failed: ").concat(JSON.stringify(err), " - ").concat(log.fail));
       return Promise.reject(err);
     }
     /**
@@ -357,7 +357,7 @@ var Route = /*#__PURE__*/function () {
       this.printLogAttachSuccess();
     }
     /**
-     * getWrappedEndpoint - Captura erros e normaliza antes de retornar para engine do crossbar
+     * getWrappedEndpoint - Catch errors and normalize before return for crossbar engine
      *
      * @param {array} args Description
      *
@@ -547,7 +547,7 @@ var Route = /*#__PURE__*/function () {
       });
     }
     /**
-     * Make an RPC call sending protocol data
+     * Make an RPC call sending protocol data for the caller
      * @param  {String} name rota: `route.myRPCRoute
      * @param  {Mixed} payload the same that "wargs" on procedure
      * @return {Promise}
@@ -559,11 +559,11 @@ var Route = /*#__PURE__*/function () {
       return this.routeController.call(name, payload);
     }
     /**
-     * endpoint - metodo atachado na session do crossbar
+     * endpoint - Attached method to crossbar session that will response the call
      *
      * ```js
      * Route.attach(session)
-     * // o mesmo que:
+     * // the same that:
      * session.register(route.uri, route.endpoint, route.options)
      * ```
      *
@@ -578,7 +578,11 @@ var Route = /*#__PURE__*/function () {
 
   }, {
     key: "endpoint",
-    value: function endpoint(args, kwargs, details) {}
+    value: function endpoint() {
+      var args = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+      var kwargs = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var details = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+    }
   }, {
     key: "clientApplication",
     get: function get() {
