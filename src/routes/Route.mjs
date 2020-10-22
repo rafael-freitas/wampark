@@ -183,7 +183,7 @@ export default class Route {
    */
   printLogAttachFail (err) {
     const log = this.getLogger()
-    log.error(`Route <${log.colors.silly(this.uri)}> falhou: ${JSON.stringify(err)} - ${log.fail}`)
+    log.error(`Route <${log.colors.silly(this.uri)}> failed: ${JSON.stringify(err)} - ${log.fail}`)
     return Promise.reject(err)
   }
 
@@ -282,7 +282,7 @@ export default class Route {
   }
 
   /**
-   * getWrappedEndpoint - Captura erros e normaliza antes de retornar para engine do crossbar
+   * getWrappedEndpoint - Catch errors and normalize before return for crossbar engine
    *
    * @param {array} args Description
    *
@@ -402,7 +402,7 @@ export default class Route {
   }
 
   /**
-   * Make an RPC call sending protocol data
+   * Make an RPC call sending protocol data for the caller
    * @param  {String} name rota: `route.myRPCRoute
    * @param  {Mixed} payload the same that "wargs" on procedure
    * @return {Promise}
@@ -412,11 +412,11 @@ export default class Route {
   }
 
   /**
-   * endpoint - metodo atachado na session do crossbar
+   * endpoint - Attached method to crossbar session that will response the call
    *
    * ```js
    * Route.attach(session)
-   * // o mesmo que:
+   * // the same that:
    * session.register(route.uri, route.endpoint, route.options)
    * ```
    *
@@ -428,7 +428,7 @@ export default class Route {
    * @param {Object} details Description
    * @returns {Promise}
    */
-  endpoint (args, kwargs, details) {
+  endpoint (args = [], kwargs = {}, details = {}) {
 
   }
 }
