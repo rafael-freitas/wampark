@@ -1,5 +1,7 @@
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -19,5 +21,3 @@ Object.defineProperty(exports, "Route", {
 var _RouteTypes = _interopRequireDefault(require("./RouteTypes"));
 
 var _Route = _interopRequireDefault(require("./Route"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }

@@ -1,9 +1,21 @@
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports["default"] = exports.RouteController = exports.RouteProtocol = void 0;
+
+var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
+
+var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
+
+var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
+
+var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
+
+var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
 
 var _lodash = require("lodash");
 
@@ -23,30 +35,25 @@ var _uuid = require("uuid");
 
 var _Application = _interopRequireDefault(require("../Application"));
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
-
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
-
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
+/**
+* ******************************************************************************************************
+*
+*   Route
+*
+*     Classe de rota para protocolo WAMP sobre Autobahn lib
+*     Todas as rotas devem herdar de Route
+*
+*
+*   @author     Rafael Freitas
+*   @date       Feb 03 2018
+*   @update     Apr 22 2018 by Rafael
+*
+*   @class Route
+*   @memberof module:lib/routes
+*   @requires {@link module:lib/routes.RouteTypes}
+*
+* ******************************************************************************************************
+*/
 var TOTAL_CPU_CORES = process.env.CLUSTER_MAX_FORKS || _os["default"].cpus().length;
 
 var worker = _cluster["default"].worker;
@@ -65,8 +72,7 @@ var snooze = function snooze(ms) {
 };
 
 var RouteProtocol = function RouteProtocol(protocol) {
-  _classCallCheck(this, RouteProtocol);
-
+  (0, _classCallCheck2["default"])(this, RouteProtocol);
   Object.assign(this, {
     fromSession: null,
     targetSession: null,
@@ -83,9 +89,7 @@ var RouteController = /*#__PURE__*/function () {
         kwargs = _ref.kwargs,
         details = _ref.details,
         session = _ref.session;
-
-    _classCallCheck(this, RouteController);
-
+    (0, _classCallCheck2["default"])(this, RouteController);
     this.args = args;
     this.kwargs = kwargs;
     this.details = details;
@@ -98,7 +102,7 @@ var RouteController = /*#__PURE__*/function () {
     }, this.args[0]));
   }
 
-  _createClass(RouteController, [{
+  (0, _createClass2["default"])(RouteController, [{
     key: "call",
 
     /**
@@ -131,7 +135,6 @@ var RouteController = /*#__PURE__*/function () {
       return _ClientApplication["default"].create(this.routeProtocol);
     }
   }]);
-
   return RouteController;
 }();
 
@@ -140,9 +143,7 @@ exports.RouteController = RouteController;
 var Route = /*#__PURE__*/function () {
   function Route() {
     var properties = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
-    _classCallCheck(this, Route);
-
+    (0, _classCallCheck2["default"])(this, Route);
     properties = (0, _lodash.defaults)(properties, _defaults); // detalhes do caller (quem chamou a rota)
 
     this.details = {};
@@ -163,7 +164,7 @@ var Route = /*#__PURE__*/function () {
    */
 
 
-  _createClass(Route, [{
+  (0, _createClass2["default"])(Route, [{
     key: "getLogger",
 
     /**
@@ -185,8 +186,8 @@ var Route = /*#__PURE__*/function () {
   }, {
     key: "onAttachSuccess",
     value: function () {
-      var _onAttachSuccess = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(result) {
-        return regeneratorRuntime.wrap(function _callee$(_context) {
+      var _onAttachSuccess = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(result) {
+        return _regenerator["default"].wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
@@ -299,14 +300,14 @@ var Route = /*#__PURE__*/function () {
       var endpoint = this.getWrappedEndpoint.bind(this);
 
       var onMessage = /*#__PURE__*/function () {
-        var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2() {
+        var _ref2 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2() {
           var message,
               type,
               id,
               args,
               result,
               _args2 = arguments;
-          return regeneratorRuntime.wrap(function _callee2$(_context2) {
+          return _regenerator["default"].wrap(function _callee2$(_context2) {
             while (1) {
               switch (_context2.prev = _context2.next) {
                 case 0:
@@ -320,7 +321,7 @@ var Route = /*#__PURE__*/function () {
 
                   _context2.prev = 3;
                   _context2.next = 6;
-                  return endpoint.call.apply(endpoint, [_this].concat(_toConsumableArray(args)));
+                  return endpoint.call.apply(endpoint, [_this].concat((0, _toConsumableArray2["default"])(args)));
 
                 case 6:
                   result = _context2.sent;
@@ -374,9 +375,9 @@ var Route = /*#__PURE__*/function () {
       }
 
       return new Promise( /*#__PURE__*/function () {
-        var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(resolve, reject) {
+        var _ref3 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(resolve, reject) {
           var w, attempts, id, onMessage;
-          return regeneratorRuntime.wrap(function _callee3$(_context3) {
+          return _regenerator["default"].wrap(function _callee3$(_context3) {
             while (1) {
               switch (_context3.prev = _context3.next) {
                 case 0:
@@ -614,7 +615,6 @@ var Route = /*#__PURE__*/function () {
       return route;
     }
   }]);
-
   return Route;
 }();
 

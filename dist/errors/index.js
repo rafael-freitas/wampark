@@ -1,5 +1,7 @@
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -23,8 +25,6 @@ var _ErrorTypes = _interopRequireDefault(require("./ErrorTypes"));
 var _ApplicationError = _interopRequireDefault(require("./ApplicationError"));
 
 var _normalize = _interopRequireDefault(require("./normalize"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 /**
  * @requires {@link module:lib/errors.ErrorTypes}

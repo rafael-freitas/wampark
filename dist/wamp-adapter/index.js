@@ -1,5 +1,7 @@
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -18,8 +20,6 @@ var _WampAdapterError = _interopRequireDefault(require("./WampAdapterError"));
 var _wrappers = require("./wrappers");
 
 var _Application = _interopRequireDefault(require("../Application"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 var AUTOBAHN_DEFAULT_CONFIG = {
   hostname: 'localhost',

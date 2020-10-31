@@ -1,57 +1,39 @@
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports["default"] = void 0;
 
+var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
+
+var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
+
+var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/defineProperty"));
+
+var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
+
+var _assertThisInitialized2 = _interopRequireDefault(require("@babel/runtime/helpers/assertThisInitialized"));
+
+var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
+
+var _inherits2 = _interopRequireDefault(require("@babel/runtime/helpers/inherits"));
+
+var _possibleConstructorReturn2 = _interopRequireDefault(require("@babel/runtime/helpers/possibleConstructorReturn"));
+
+var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime/helpers/getPrototypeOf"));
+
+var _wrapNativeSuper2 = _interopRequireDefault(require("@babel/runtime/helpers/wrapNativeSuper"));
+
 var _ErrorTypes = _interopRequireDefault(require("./ErrorTypes"));
 
 var _assert = _interopRequireDefault(require("assert"));
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
-
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
-function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return; var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
-
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _wrapNativeSuper(Class) { var _cache = typeof Map === "function" ? new Map() : undefined; _wrapNativeSuper = function _wrapNativeSuper(Class) { if (Class === null || !_isNativeFunction(Class)) return Class; if (typeof Class !== "function") { throw new TypeError("Super expression must either be null or a function"); } if (typeof _cache !== "undefined") { if (_cache.has(Class)) return _cache.get(Class); _cache.set(Class, Wrapper); } function Wrapper() { return _construct(Class, arguments, _getPrototypeOf(this).constructor); } Wrapper.prototype = Object.create(Class.prototype, { constructor: { value: Wrapper, enumerable: false, writable: true, configurable: true } }); return _setPrototypeOf(Wrapper, Class); }; return _wrapNativeSuper(Class); }
-
-function _construct(Parent, args, Class) { if (_isNativeReflectConstruct()) { _construct = Reflect.construct; } else { _construct = function _construct(Parent, args, Class) { var a = [null]; a.push.apply(a, args); var Constructor = Function.bind.apply(Parent, a); var instance = new Constructor(); if (Class) _setPrototypeOf(instance, Class.prototype); return instance; }; } return _construct.apply(null, arguments); }
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2["default"])(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2["default"])(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2["default"])(this, result); }; }
 
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
-
-function _isNativeFunction(fn) { return Function.toString.call(fn).indexOf("[native code]") !== -1; }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
 /**
  * @requires {@link module:lib/errors.ErrorTypes}
@@ -85,11 +67,11 @@ Error.prototype.toObject = function () {
 };
 
 var ApplicationError = /*#__PURE__*/function (_Error) {
-  _inherits(ApplicationError, _Error);
+  (0, _inherits2["default"])(ApplicationError, _Error);
 
   var _super = _createSuper(ApplicationError);
 
-  _createClass(ApplicationError, null, [{
+  (0, _createClass2["default"])(ApplicationError, null, [{
     key: "assert",
 
     /**
@@ -128,7 +110,7 @@ var ApplicationError = /*#__PURE__*/function (_Error) {
             }),
                 message = _assert$AssertionErro.message;
 
-            Object.assign(assertation, _defineProperty({}, key, function () {
+            Object.assign(assertation, (0, _defineProperty2["default"])({}, key, function () {
               for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
                 args[_key] = arguments[_key];
               }
@@ -173,7 +155,7 @@ var ApplicationError = /*#__PURE__*/function (_Error) {
             type = Type.name.toLowerCase();
           }
 
-          if (_typeof(value) !== type) {
+          if ((0, _typeof2["default"])(value) !== type) {
             _assert["default"].fail(new ErrorClass(myMessage || 'Asseration Failed'));
           }
         },
@@ -204,7 +186,7 @@ var ApplicationError = /*#__PURE__*/function (_Error) {
             _assert["default"].fail(new ErrorClass(myMessage || 'Null value'));
           }
 
-          switch (_typeof(value)) {
+          switch ((0, _typeof2["default"])(value)) {
             case 'string':
               _assert["default"].notEqual(value, '', new ErrorClass(myMessage || 'Empty string'));
 
@@ -242,7 +224,7 @@ var ApplicationError = /*#__PURE__*/function (_Error) {
   function ApplicationError() {
     var _this;
 
-    _classCallCheck(this, ApplicationError);
+    (0, _classCallCheck2["default"])(this, ApplicationError);
 
     var _arguments = Array.prototype.slice.call(arguments),
         properties = _arguments[0],
@@ -270,7 +252,7 @@ var ApplicationError = /*#__PURE__*/function (_Error) {
       _this.family = '';
     }
 
-    if (_typeof(details) === 'object') {
+    if ((0, _typeof2["default"])(details) === 'object') {
       _this.details = details;
     } // details foi passado como segundo parametro
 
@@ -282,15 +264,15 @@ var ApplicationError = /*#__PURE__*/function (_Error) {
     // Capturing stack trace, excluding constructor call from it.
 
 
-    Error.captureStackTrace(_assertThisInitialized(_this), _this.constructor); // se o primeiro parametro for um objeto importar para a instancia
+    Error.captureStackTrace((0, _assertThisInitialized2["default"])(_this), _this.constructor); // se o primeiro parametro for um objeto importar para a instancia
     // {code: 1, message: 'Ocorreu um erro' ...}
 
-    if (_typeof(properties) === 'object') {
+    if ((0, _typeof2["default"])(properties) === 'object') {
       var name = properties.name,
           stack = properties.stack,
           _message2 = properties.message; // copiar todos as propriedades do Error ou JSON para a instancia
 
-      Object.assign(_assertThisInitialized(_this), properties);
+      Object.assign((0, _assertThisInitialized2["default"])(_this), properties);
 
       if (name) {
         _this.name = name;
@@ -307,7 +289,7 @@ var ApplicationError = /*#__PURE__*/function (_Error) {
     } // convert "COD001: Meu erro" para {code: 'COD001', message: 'Meu erro'}
 
 
-    Object.assign(_assertThisInitialized(_this), _this.stripCodeFromDescription(_this.message, _this.code || code));
+    Object.assign((0, _assertThisInitialized2["default"])(_this), _this.stripCodeFromDescription(_this.message, _this.code || code));
 
     if (!_this.code) {
       _this.code = 'UKW';
@@ -322,16 +304,15 @@ var ApplicationError = /*#__PURE__*/function (_Error) {
     } // configurar o erro.isThrowable atributo dinamico
 
 
-    var self = _assertThisInitialized(_this);
-
-    Object.defineProperty(_assertThisInitialized(_this), 'isThrowable', {
+    var self = (0, _assertThisInitialized2["default"])(_this);
+    Object.defineProperty((0, _assertThisInitialized2["default"])(_this), 'isThrowable', {
       get: function get() {
         return self.type < _ErrorTypes["default"].THROWABLE;
       },
       // writable: false,
       configurable: false
     });
-    return _possibleConstructorReturn(_this);
+    return (0, _possibleConstructorReturn2["default"])(_this);
   }
   /**
    * setCode - Atribui um codigo com a familia do erro
@@ -346,7 +327,7 @@ var ApplicationError = /*#__PURE__*/function (_Error) {
    */
 
 
-  _createClass(ApplicationError, [{
+  (0, _createClass2["default"])(ApplicationError, [{
     key: "setCode",
     value: function setCode(code) {
       this._code = code;
@@ -536,7 +517,7 @@ var ApplicationError = /*#__PURE__*/function (_Error) {
 
 
       if (error.error && Array.isArray(error.args)) {
-        var _error$args = _slicedToArray(error.args, 1),
+        var _error$args = (0, _slicedToArray2["default"])(error.args, 1),
             err = _error$args[0];
 
         var parsedJsonError;
@@ -553,8 +534,7 @@ var ApplicationError = /*#__PURE__*/function (_Error) {
       return new this(error);
     }
   }]);
-
   return ApplicationError;
-}( /*#__PURE__*/_wrapNativeSuper(Error));
+}( /*#__PURE__*/(0, _wrapNativeSuper2["default"])(Error));
 
 exports["default"] = ApplicationError;
