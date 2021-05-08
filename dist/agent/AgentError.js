@@ -21,24 +21,24 @@ function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflec
 
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
 
-var WampAdapterError = /*#__PURE__*/function (_ApplicationError) {
-  (0, _inherits2["default"])(WampAdapterError, _ApplicationError);
+var AgentError = /*#__PURE__*/function (_ApplicationError) {
+  (0, _inherits2["default"])(AgentError, _ApplicationError);
 
-  var _super = _createSuper(WampAdapterError);
+  var _super = _createSuper(AgentError);
 
-  function WampAdapterError() {
+  function AgentError() {
     var _this;
 
-    (0, _classCallCheck2["default"])(this, WampAdapterError);
+    (0, _classCallCheck2["default"])(this, AgentError);
     _this = _super.apply(this, arguments);
 
-    _this.setFamily('WAMPADT');
+    _this.setFamily('AGNTS');
 
-    _this.type = _errors.ErrorTypes.CONNECTION;
+    _this.type = _errors.ErrorTypes.RUNTIME;
     return _this;
   }
 
-  return WampAdapterError;
+  return AgentError;
 }(_errors.ApplicationError);
 
-exports["default"] = WampAdapterError;
+exports["default"] = AgentError;

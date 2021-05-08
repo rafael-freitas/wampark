@@ -1,7 +1,8 @@
-import Application from './Application'
+import application from './Application'
 import logger from './logger'
 import cluster from 'cluster'
 import os from 'os'
+import { RouteTypes, Route } from './routes'
 
 /**
  * @requires {@link module:lib/apllication.Application}
@@ -16,14 +17,12 @@ import os from 'os'
  * @author     Rafael Freitas
  * @date       Feb 13 2018
  * @module lib/apllication
- * @example
- * import application from '/lib/application'
  */
 
 // utilizar o parametro config.maxClusterForks do CONFIG quando for um numero valido maior que 0, se nao usar o maximo de CPUs
 const TOTAL_CPU_CORES = process.env.CLUSTER_MAX_FORKS || os.cpus().length
 
-function createApplication (extraConfigs = {}) {
+function configureApplicationInstance (extraConfigs = {}) {
   // CLONE ENVOIRIMENT VALUES FOR CONFIG
   const config = Object.assign({}, process.env, extraConfigs)
 
@@ -36,49 +35,53 @@ function createApplication (extraConfigs = {}) {
   const log = logger('application')
 
   // singleton global Application
-  const application = new Application({ ...config, logger })
+  // const application = new Application({ config, logger, RouteTypes, Route, WebRoute })
+  application.setup({ config, logger, RouteTypes, Route })
 
-  if (config.WAMP_AUTOCONNECT) {
-    log.info(`Trying to connect to WAMP SERVER in ${log.colors.yellow(config.WAMP_URL)} on realm: ${log.colors.yellow(config.WAMP_REALM)}`)
-    //   // agendar para depois para que os outros modulos instalem o listener
-    setTimeout(() => {
-      application.connectWampServer()
-    }, config.WAMP_CONNECTION_DELAY)
-  } else {
-    log.warn('WAMP connections is disabled. To enable set true "WAMP_AUTOCONNECT" on config or your envoirement')
+  // if (config.WAMP_AUTOCONNECT) {
+  //   log.info(`Trying to connect to WAMP SERVER in ${log.colors.yellow(config.WAMP_URL)} on realm: ${log.colors.yellow(config.WAMP_REALM)}`)
+  //   //   // agendar para depois para que os outros modulos instalem o listener
+  //   setTimeout(() => {
+  //     application.connectWampServer()
+  //   }, config.WAMP_CONNECTION_DELAY)
+  // } else {
+  //   log.warn('WAMP connections is disabled. To enable set true "WAMP_AUTOCONNECT" on config or your envoirement')
+  // }
+
+  if (application.config.CLUSTER_ENABLED) {
+    cluster.setMaxListeners(1000 * 10)
+    if (cluster.isMaster) {
+      console.log('Master process is running')
+  
+      cluster.setupMaster({
+        args: ['--extensions', '.mjs']
+      })
+  
+      // Fork workers - save cluster workers on application
+      for (let i = 0; i < TOTAL_CPU_CORES; i++) {
+        application.workers.push(cluster.fork())
+      }
+  
+      cluster.on('exit', (worker, code, signal) => {
+        console.log(`Worker ${worker.process.pid} died with code: ${code}, and signal: ${signal}`)
+        console.log('Starting a new worker')
+        cluster.fork()
+        // remover o worker que morreu
+        if (application.workers.indexOf(worker) !== -1) {
+          application.workers.splice(application.workers.indexOf(worker), 1)
+        }
+      })
+    } else {
+      console.log(`Worker ${cluster.worker.id}`)
+      cluster.worker.setMaxListeners(1000 * 10)
+    }
   }
+
   return application
 }
 
-// debugger
-const application = createApplication()
+// create an Application instance to keep it unique
+configureApplicationInstance()
 
-if (application.CLUSTER_ENABLED) {
-  cluster.setMaxListeners(1000 * 10)
-  if (cluster.isMaster) {
-    console.log('Master process is running')
 
-    cluster.setupMaster({
-      args: ['--extensions', '.mjs']
-    })
-
-    // Fork workers - save cluster workers on application
-    for (let i = 0; i < TOTAL_CPU_CORES; i++) {
-      application.workers.push(cluster.fork())
-    }
-
-    cluster.on('exit', (worker, code, signal) => {
-      console.log(`Worker ${worker.process.pid} died with code: ${code}, and signal: ${signal}`)
-      console.log('Starting a new worker')
-      cluster.fork()
-      // remover o worker que morreu
-      if (application.workers.indexOf(worker) !== -1) {
-        application.workers.splice(application.workers.indexOf(worker), 1)
-      }
-    })
-  } else {
-    console.log(`Worker ${cluster.worker.id}`)
-    cluster.worker.setMaxListeners(1000 * 10)
-  }
-}
 export default application
