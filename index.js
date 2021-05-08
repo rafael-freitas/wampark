@@ -1,3 +1,3 @@
 const application = require('./dist/index')
 
-module.exports = application
+module.exports = application.default
