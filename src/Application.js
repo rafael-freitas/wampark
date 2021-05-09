@@ -18,7 +18,12 @@ class Application extends EventEmitter {
     super()
 
     // all configuration values
-    this.config = {}
+    this.config = {
+      /**
+       * Enable cluster feature?
+       */
+      cluster: false
+    }
 
     // default log for application
     this.log = logger('application')

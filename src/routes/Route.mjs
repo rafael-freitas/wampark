@@ -113,6 +113,12 @@ export default class Route {
     this.log = this.getLogger()
   }
 
+  /**
+   * Configura a instância antes de cada chamada
+   */
+  setup () {
+    // ...
+  }
 
   /**
    * Criar uma instancia a partir de outra Route já inicializada
@@ -382,6 +388,9 @@ export default class Route {
           details: args[2],
           session: this.session
         })
+
+        // metodo opcional para configurar a instancia da rota antes de executar o endpoint
+        this.setup()
 
         const result = this.endpoint(...args)
         if (typeof result !== 'undefined' && ((result instanceof Promise || result !== null) && typeof result.then === 'function')) {
