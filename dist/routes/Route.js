@@ -157,14 +157,22 @@ var Route = /*#__PURE__*/function () {
     this.log = this.getLogger();
   }
   /**
-   * Criar uma instancia a partir de outra Route já inicializada
-   * Irá herdar os dados de sessão da rota de origem
-   * @param  {Route} fromRoute Instancia de Route
-   * @return {Route}
+   * Configura a instância antes de cada chamada
    */
 
 
   (0, _createClass2["default"])(Route, [{
+    key: "setup",
+    value: function setup() {// ...
+    }
+    /**
+     * Criar uma instancia a partir de outra Route já inicializada
+     * Irá herdar os dados de sessão da rota de origem
+     * @param  {Route} fromRoute Instancia de Route
+     * @return {Route}
+     */
+
+  }, {
     key: "getLogger",
 
     /**
@@ -525,7 +533,9 @@ var Route = /*#__PURE__*/function () {
             kwargs: args[1],
             details: args[2],
             session: _this3.session
-          });
+          }); // metodo opcional para configurar a instancia da rota antes de executar o endpoint
+
+          _this3.setup();
 
           var result = _this3.endpoint.apply(_this3, args);
 
