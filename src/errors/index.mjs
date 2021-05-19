@@ -50,9 +50,9 @@ function normalizeWrapper (err) {
     ------------------------------------------------------------------------
  */
 
-export {
-  createErrorWapper as create,
-  normalizeWrapper as normalize,
+export default {
+  create: createErrorWapper,
+  normalize: normalizeWrapper,
   ErrorTypes,
   ApplicationError
 }

@@ -5,20 +5,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.create = createErrorWapper;
-exports.normalize = normalizeWrapper;
-Object.defineProperty(exports, "ErrorTypes", {
-  enumerable: true,
-  get: function get() {
-    return _ErrorTypes["default"];
-  }
-});
-Object.defineProperty(exports, "ApplicationError", {
-  enumerable: true,
-  get: function get() {
-    return _ApplicationError["default"];
-  }
-});
+exports["default"] = void 0;
 
 var _ErrorTypes = _interopRequireDefault(require("./ErrorTypes"));
 
@@ -74,3 +61,12 @@ function normalizeWrapper(err) {
     exports
     ------------------------------------------------------------------------
  */
+
+
+var _default = {
+  create: createErrorWapper,
+  normalize: normalizeWrapper,
+  ErrorTypes: _ErrorTypes["default"],
+  ApplicationError: _ApplicationError["default"]
+};
+exports["default"] = _default;
