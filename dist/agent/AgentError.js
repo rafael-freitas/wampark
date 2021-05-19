@@ -15,11 +15,14 @@ var _possibleConstructorReturn2 = _interopRequireDefault(require("@babel/runtime
 
 var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime/helpers/getPrototypeOf"));
 
-var _errors = require("../errors");
+var _errors = _interopRequireDefault(require("../errors"));
 
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2["default"])(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2["default"])(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2["default"])(this, result); }; }
 
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+
+var ErrorTypes = _errors["default"].ErrorTypes,
+    ApplicationError = _errors["default"].ApplicationError;
 
 var AgentError = /*#__PURE__*/function (_ApplicationError) {
   (0, _inherits2["default"])(AgentError, _ApplicationError);
@@ -34,11 +37,11 @@ var AgentError = /*#__PURE__*/function (_ApplicationError) {
 
     _this.setFamily('AGNTS');
 
-    _this.type = _errors.ErrorTypes.RUNTIME;
+    _this.type = ErrorTypes.RUNTIME;
     return _this;
   }
 
   return AgentError;
-}(_errors.ApplicationError);
+}(ApplicationError);
 
 exports["default"] = AgentError;
