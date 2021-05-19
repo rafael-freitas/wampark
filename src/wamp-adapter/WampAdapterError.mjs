@@ -1,4 +1,6 @@
-import { ErrorTypes, ApplicationError } from '../errors'
+import errors from '../errors'
+
+const { ErrorTypes, ApplicationError } = errors
 
 export default class WampAdapterError extends ApplicationError {
   constructor () {
