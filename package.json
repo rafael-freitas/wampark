@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon --exec babel-node --extensions .mjs,.js src",
+    "dev": "nodemon --exec babel-node --inspect=0.0.0.0:9228 --extensions .mjs,.js src",
+    "dev-brk": "nodemon --exec babel-node --inspect-brk=0.0.0.0:9228 --extensions .mjs,.js src",
     "build": "babel -x .mjs,.js src -d dist --copy-files",
     "babel-version": "babel --version"
   },
