@@ -23,14 +23,6 @@ var _AgentError = _interopRequireDefault(require("./AgentError"));
 
 var _Component = _interopRequireDefault(require("./protocol/Component"));
 
-var _Workspace = _interopRequireDefault(require("./protocol/Workspace"));
-
-var _Dock = _interopRequireDefault(require("./protocol/Dock"));
-
-var _Dialogs = _interopRequireDefault(require("./protocol/Dialogs"));
-
-var _Store = _interopRequireDefault(require("./protocol/Store"));
-
 var _WampServerInterface = _interopRequireDefault(require("./protocol/WampServerInterface"));
 
 var _index = _interopRequireDefault(require("../index"));
@@ -111,7 +103,22 @@ var ClientApplication = /*#__PURE__*/function () {
       // uso padrao
 
       return app;
-    }
+    } // get dialogs () {
+    //   return new Dialogs(this)
+    // }
+    // get workspace () {
+    //   return new Workspace(this)
+    // }
+    // get dock () {
+    //   return new Dock(this)
+    // }
+    // get store () {
+    //   return new Store(this)
+    // }
+    // get root () {
+    //   return this.component({ isRootComponent: true })
+    // }
+
   }, {
     key: "component",
     value: function component(selector) {
@@ -137,9 +144,10 @@ var ClientApplication = /*#__PURE__*/function () {
     }
   }, {
     key: "message",
-    value: function message(options) {
-      return this.plugin('message', {
-        options: options
+    value: function message(args) {
+      return this.plugin('$message', {
+        args: args,
+        method: null
       }, {
         isRootComponent: true
       });
@@ -191,40 +199,14 @@ var ClientApplication = /*#__PURE__*/function () {
       return {};
     }
   }, {
-    key: "dialogs",
-    get: function get() {
-      return new _Dialogs["default"](this);
-    }
-  }, {
-    key: "workspace",
-    get: function get() {
-      return new _Workspace["default"](this);
-    }
-  }, {
-    key: "dock",
-    get: function get() {
-      return new _Dock["default"](this);
-    }
-  }, {
-    key: "store",
-    get: function get() {
-      return new _Store["default"](this);
-    }
-  }, {
-    key: "root",
-    get: function get() {
-      return this.component({
-        isRootComponent: true
-      });
-    }
-  }, {
     key: "notify",
     get: function get() {
       var _this2 = this;
 
-      var sendNotify = function sendNotify(options) {
-        return _this2.plugin('notify', {
-          options: options
+      var sendNotify = function sendNotify(args) {
+        return _this2.plugin('$notify', {
+          args: args,
+          method: null
         }, {
           isRootComponent: true
         });
