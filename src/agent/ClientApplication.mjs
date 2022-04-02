@@ -9,10 +9,10 @@
 
 import AgentError from './AgentError'
 import Component from './protocol/Component'
-import Workspace from './protocol/Workspace'
-import Dock from './protocol/Dock'
-import Dialogs from './protocol/Dialogs'
-import Store from './protocol/Store'
+// import Workspace from './protocol/Workspace'
+// import Dock from './protocol/Dock'
+// import Dialogs from './protocol/Dialogs'
+// import Store from './protocol/Store'
 import WampServerInterface from './protocol/WampServerInterface'
 import application from '../index'
 
@@ -84,29 +84,29 @@ export default class ClientApplication {
     return app
   }
 
-  get dialogs () {
-    return new Dialogs(this)
-  }
+  // get dialogs () {
+  //   return new Dialogs(this)
+  // }
 
-  get workspace () {
-    return new Workspace(this)
-  }
+  // get workspace () {
+  //   return new Workspace(this)
+  // }
 
-  get dock () {
-    return new Dock(this)
-  }
+  // get dock () {
+  //   return new Dock(this)
+  // }
 
-  get store () {
-    return new Store(this)
-  }
+  // get store () {
+  //   return new Store(this)
+  // }
 
-  get root () {
-    return this.component({ isRootComponent: true })
-  }
+  // get root () {
+  //   return this.component({ isRootComponent: true })
+  // }
 
   get notify () {
-    const sendNotify = (options) => {
-      return this.plugin('notify', { options }, { isRootComponent: true })
+    const sendNotify = (args) => {
+      return this.plugin('$notify', { args, method: null }, { isRootComponent: true })
     }
     Object.assign(sendNotify, {
       success: (message, title = 'Sucesso!') => {
@@ -177,8 +177,8 @@ export default class ClientApplication {
     })
   }
 
-  message (options) {
-    return this.plugin('message', { options }, { isRootComponent: true })
+  message (args) {
+    return this.plugin('$message', { args, method: null }, { isRootComponent: true })
   }
 
   /**

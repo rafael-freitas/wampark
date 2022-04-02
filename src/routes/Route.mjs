@@ -61,12 +61,13 @@ export class RouteController {
     this.details = details
     this.session = session
 
-    this.routeProtocol = new RouteProtocol(Object.assign({
+    this.routeProtocol = new RouteProtocol({
       fromUser: this.details.caller_authid,
       fromSession: this.details.caller,
       targetUser: this.details.caller_authid,
-      targetSession: this.details.caller
-    }, this.args[0]))
+      targetSession: this.details.caller,
+      args: this.args[0]
+    })
   }
 
   get clientApplication () {
