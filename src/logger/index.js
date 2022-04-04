@@ -125,7 +125,7 @@ function createLogger (container = 'app') {
     // return `${timestamp} [${label}] ${level}: ${message}`;
     // Return string will be passed to logger.
     const level = colors[options.level]
-    const log = [colors.gray(timestamp())]
+    const log = [colors.gray(new Date())]
 
     if (WORKER_ID !== MAIN_WORKER) {
       log.push(colors.gray(['[Worker ', WORKER_ID, ']'].join('')))
@@ -163,7 +163,7 @@ function createLogger (container = 'app') {
     // format: winston.format.json(),
     format: combine(
       label({ label: container }),
-      timestamp(),
+      // timestamp(),
       formatterFile
     ),
     defaultMeta: { service: 'user-service' },
