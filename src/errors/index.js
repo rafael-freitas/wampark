@@ -1,5 +1,5 @@
 import ErrorTypes from './ErrorTypes.js'
-// import ApplicationError2 from './ApplicationError.js'
+import ApplicationError from './ApplicationError.js'
 import normalize from './normalize.js'
 
 /**
@@ -54,5 +54,5 @@ export default {
   create: createErrorWapper,
   normalize: normalizeWrapper,
   ErrorTypes,
-  // ApplicationError
+  ApplicationError
 }
