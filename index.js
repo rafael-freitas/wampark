@@ -1,3 +1,3 @@
-const application = require('./dist/index')
+import application from './src/index.js'
 
-module.exports = application.default
+export default application
