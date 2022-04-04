@@ -125,7 +125,7 @@ function createLogger (container = 'app') {
     // return `${timestamp} [${label}] ${level}: ${message}`;
     // Return string will be passed to logger.
     const level = colors[options.level]
-    const log = [colors.gray(new Date())]
+    const log = [colors.gray(new Date().toGMTString())]
 
     if (WORKER_ID !== MAIN_WORKER) {
       log.push(colors.gray(['[Worker ', WORKER_ID, ']'].join('')))
