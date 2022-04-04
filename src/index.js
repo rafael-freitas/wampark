@@ -1,8 +1,8 @@
-import application from './Application'
-import logger from './logger'
+import application from './Application.js'
+import logger from './logger/index.js'
 import cluster from 'cluster'
 import os from 'os'
-import { RouteTypes, Route } from './routes'
+import { RouteTypes, Route } from './routes/index.js'
 
 /**
  * @requires {@link module:lib/apllication.Application}

@@ -19,15 +19,17 @@
 * ******************************************************************************************************
 */
 
-import { isEmpty, defaults } from 'lodash'
-import normalizeError from '../errors/normalize'
-import RouteTypes from './RouteTypes'
-import logger from '../logger'
-import ClientApplication from '../agent/ClientApplication'
+// import { isEmpty, defaults } from 'lodash'
+import defaults from 'lodash/defaults.js'
+import isEmpty from 'lodash/isEmpty.js'
+import normalizeError from '../errors/normalize.js'
+import RouteTypes from './RouteTypes.js'
+import logger from '../logger/index.js'
+import ClientApplication from '../agent/ClientApplication.js'
 import cluster from 'cluster'
 import os from 'os'
 import { v1 as uuid } from 'uuid'
-import application from '../Application'
+import application from '../Application.js'
 
 const TOTAL_CPU_CORES = process.env.CLUSTER_MAX_FORKS || os.cpus().length
 const worker = cluster.worker

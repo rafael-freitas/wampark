@@ -12,7 +12,7 @@
  * import routes from '/lib/routes'
  */
 
-import RouteTypes from './RouteTypes'
-import Route from './Route'
+import RouteTypes from './RouteTypes.js'
+import Route from './Route.js'
 
 export { RouteTypes, Route }

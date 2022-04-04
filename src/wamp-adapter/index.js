@@ -1,11 +1,11 @@
 import autobahn from 'autobahn'
 import assert from 'assert'
 
-import logger, { logname } from '../logger'
+import logger, { logname } from '../logger/index.js'
 
-import WampAdapterError from './WampAdapterError'
-import { sessionWrapper } from './wrappers'
-import Application from '../Application'
+import WampAdapterError from './WampAdapterError.js'
+import { sessionWrapper } from './wrappers.js'
+import Application from '../Application.js'
 
 const AUTOBAHN_DEFAULT_CONFIG = {
   hostname: 'localhost',
@@ -111,7 +111,8 @@ function createConnection (settings) {
   assert(typeof settings.authpass !== 'undefined', 'Informe o `authpass` do servidor WAMP em `WAMP_AUTHPASS`')
 
 
-  settings = Object.assign({ onchallenge }, settings)
+  // especificar wamp.2.json protocol para manter compatibilidade com autobahn 20.x
+  settings = Object.assign({ onchallenge, protocols: ['wamp.2.json'] }, settings)
   const connection = new autobahn.Connection(settings)
 
   log.info(`Connection created for ${log.colors.yellow(settings.url)} -> realm: "${log.colors.yellow(settings.realm)}"`)

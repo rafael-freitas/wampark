@@ -1,5 +1,5 @@
-import logger from '../logger'
-import { ApplicationError } from '../errors'
+import logger from '../logger/index.js'
+import ApplicationError from '../errors/ApplicationError.js'
 
 const log = logger('wamp-adapter')
 

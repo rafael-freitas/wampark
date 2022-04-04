@@ -1,5 +1,5 @@
 
-import application from '../src/index'
+import application from '../src/index.js'
 
 export default class MyRouteSample extends application.Route {
   constructor () {

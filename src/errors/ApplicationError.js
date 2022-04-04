@@ -1,4 +1,4 @@
-import ErrorTypes from './ErrorTypes'
+import ErrorTypes from './ErrorTypes.js'
 import assert from 'assert'
 
 /**

@@ -1,5 +1,5 @@
-import WampServerInterface from './WampServerInterface'
-import { ApplicationError } from '../../errors'
+import WampServerInterface from './WampServerInterface.js'
+import ApplicationError from '../../errors/ApplicationError.js'
 
 /**
  * Representação de componentes da UI em VueJS

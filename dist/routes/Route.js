@@ -94,13 +94,12 @@ var RouteController = /*#__PURE__*/function () {
     this.kwargs = kwargs;
     this.details = details;
     this.session = session;
-    this.routeProtocol = new RouteProtocol({
+    this.routeProtocol = new RouteProtocol(Object.assign({
       fromUser: this.details.caller_authid,
       fromSession: this.details.caller,
       targetUser: this.details.caller_authid,
-      targetSession: this.details.caller,
-      args: this.args[0]
-    });
+      targetSession: this.details.caller
+    }, this.args[0]));
   }
 
   (0, _createClass2["default"])(RouteController, [{

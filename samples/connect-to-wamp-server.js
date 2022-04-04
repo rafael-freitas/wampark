@@ -1,7 +1,7 @@
 // import app from 'index'
 
-import application from '../src/index'
-import MyRouteSample from './MyRouteSample'
+import application from '../src/index.js'
+import MyRouteSample from './MyRouteSample.js'
 
 const PORT = 9000
 const HOSTNAME = 'localhost'

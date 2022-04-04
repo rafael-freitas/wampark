@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events'
-import errors from './errors'
-import logger from './logger'
-import { connect } from './wamp-adapter'
+import errors from './errors/index.js'
+import logger from './logger/index.js'
+import { connect } from './wamp-adapter/index.js'
 
 /**
  * @requires events

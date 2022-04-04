@@ -7,14 +7,14 @@
  * @module lib/agent
  */
 
-import AgentError from './AgentError'
-import Component from './protocol/Component'
+import AgentError from './AgentError.js'
+import Component from './protocol/Component.js'
 // import Workspace from './protocol/Workspace'
 // import Dock from './protocol/Dock'
 // import Dialogs from './protocol/Dialogs'
 // import Store from './protocol/Store'
-import WampServerInterface from './protocol/WampServerInterface'
-import application from '../index'
+import WampServerInterface from './protocol/WampServerInterface.js'
+import application from '../index.js'
 
 export default class ClientApplication {
   constructor (routeProtocol) {

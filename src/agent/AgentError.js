@@ -1,6 +1,5 @@
-import errors from '../errors'
-
-const { ErrorTypes, ApplicationError } = errors
+import ErrorTypes from '../errors/ErrorTypes.js'
+import ApplicationError from '../errors/ApplicationError.js'
 
 export default class AgentError extends ApplicationError {
   constructor () {

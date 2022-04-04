@@ -38,8 +38,8 @@
 import winston from 'winston'
 import cluster from 'cluster'
 import path from 'path'
-import moment from 'moment'
-import colors from 'colors/safe'
+// import moment from 'moment'
+import colors from 'colors/safe.js'
 // import wampMiddleware from './wamp-middleware'
 
 const { combine, timestamp, label, printf } = winston.format
@@ -120,6 +120,32 @@ export function logname (dirname) {
 function createLogger (container = 'app') {
   const transports = []
 
+
+  const formatterConsole = printf((options) => {
+    // return `${timestamp} [${label}] ${level}: ${message}`;
+    // Return string will be passed to logger.
+    const level = colors[options.level]
+    const log = [colors.gray(timestamp())]
+
+    if (WORKER_ID !== MAIN_WORKER) {
+      log.push(colors.gray(['[Worker ', WORKER_ID, ']'].join('')))
+    }
+
+    log.push(colors.cyan(['[', container, ']'].join('')))
+
+    // adiciona o LEVEL do erro (INFO, DEBUG, LOG, ERROR)
+    log.push(level(options.level.toUpperCase()))
+
+    typeof options.message !== 'undefined' && log.push(options.message)
+
+    if (options.meta && Object.keys(options.meta).length) {
+      log.push('\n\t' + JSON.stringify(options.meta))
+    }
+
+    return log.join(' ')
+  })
+
+
   // transports.push(new winston.transports.Console({
   //   timestamp,
   //   formatter,
@@ -181,30 +207,6 @@ function createLogger (container = 'app') {
 
   // instalar o log.wamp.success e log.wamp.fail
   // wampMiddleware.middleware(logger)
-
-  const formatterConsole = printf((options) => {
-    // return `${timestamp} [${label}] ${level}: ${message}`;
-    // Return string will be passed to logger.
-    const level = colors[options.level]
-    const log = [colors.gray(timestamp())]
-
-    if (WORKER_ID !== MAIN_WORKER) {
-      log.push(colors.gray(['[Worker ', WORKER_ID, ']'].join('')))
-    }
-
-    log.push(colors.cyan(['[', container, ']'].join('')))
-
-    // adiciona o LEVEL do erro (INFO, DEBUG, LOG, ERROR)
-    log.push(level(options.level.toUpperCase()))
-
-    typeof options.message !== 'undefined' && log.push(options.message)
-
-    if (options.meta && Object.keys(options.meta).length) {
-      log.push('\n\t' + JSON.stringify(options.meta))
-    }
-
-    return log.join(' ')
-  })
 
   return logger
 }
