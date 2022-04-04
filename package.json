@@ -1,6 +1,6 @@
 {
   "name": "wampark",
-  "version": "1.6.2",
+  "version": "2.0.0",
   "description": "Node.js Application Architecture for big WAMP (Web Application Message Protocol) based applications and microservices",
   "main": "index.js",
   "type": "module",
