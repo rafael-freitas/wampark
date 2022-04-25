@@ -85,10 +85,12 @@ class Application extends EventEmitter {
       authpass: this.config.WAMP_AUTHPASS,
       authmethods: [typeof this.config.WAMP_AUTHMETHODS === 'string' ? this.config.WAMP_AUTHMETHODS.split(',') : 'wampcra'],
       onopen: (session) => {
+        this.isWampConnected = true
         this.emit('wamp.session.start', session)
         this.currentSession = session
       },
       onclose: (reason, details) => {
+        this.isWampConnected = false
         this.emit('wamp.session.close', reason, details)
         this.currentSession = null
       }
@@ -103,9 +105,13 @@ class Application extends EventEmitter {
    * application.attachRoute(class MyRoute extends Route {})
    */
   attachRoute (route) {
-    this.on('wamp.session.start', (session => {
-      route.attach(session)
-    }))
+    if (this.isWampConnected) {
+      route.attach(this.currentSession)
+    } else {
+      this.on('wamp.session.start', (session => {
+        route.attach(session)
+      }))
+    }
   }
 }
 
