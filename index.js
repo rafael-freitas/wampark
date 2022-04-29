@@ -1,3 +1,8 @@
 import application from './src/index.js'
 
-export default application
+// set application to global to aviod multiple instances
+if (!global._APPLICATION) {
+  global._APPLICATION = application
+}
+
+export default global._APPLICATION || application

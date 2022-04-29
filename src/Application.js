@@ -17,6 +17,8 @@ class Application extends EventEmitter {
   constructor (properties = {}) {
     super()
 
+    this.applicationId = Math.random().toString()
+
     // all configuration values
     this.config = {
       /**
