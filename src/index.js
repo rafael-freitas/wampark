@@ -3,6 +3,7 @@ import logger from './logger/index.js'
 import cluster from 'cluster'
 import os from 'os'
 import { RouteTypes, Route } from './routes/index.js'
+import dotenv from 'dotenv/config'
 
 /**
  * @requires {@link module:lib/apllication.Application}
