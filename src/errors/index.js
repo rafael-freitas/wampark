@@ -25,7 +25,7 @@ import normalize from './normalize.js'
 * // criar uma instancia de erro
 * error('E03: Ocorreu um erro', errNativeExceptionObject ) // cria o erro PREFIXE03
 */
-function createErrorWapper (family, ErrorClass = 'ApplicationError') {
+function createErrorWrapper (family, ErrorClass = 'ApplicationError') {
   return function (description, details) {
     const err = new ApplicationError(description, details)
     err.nameError = ErrorClass
@@ -51,8 +51,8 @@ function normalizeWrapper (err) {
  */
 
 export default {
-  create: createErrorWapper,
-  normalize: normalizeWrapper,
+  createErrorWrapper: createErrorWrapper,
+  normalizeWrapper: normalizeWrapper,
   ErrorTypes,
   ApplicationError
 }

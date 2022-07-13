@@ -80,10 +80,12 @@ export class RouteController {
    * Chamada RPC para uma rota WAMP
    * @param  {String} name rota: `route.store.appAcoes.list
    * @param  {Mixed} payload
+   * @param  {Oject} options opções de chamada do RPC via crossbar
+   * @param  {Oject} routeProtocol especificar um RouteProtocol default: null
    * @return {Promise}
    */
-  call (name, payload, options = {}) {
-    return this.session.call(name, [this.routeProtocol], payload, options)
+  call (name, payload, options = {}, routeProtocol = null) {
+    return this.session.call(name, [routeProtocol || this.routeProtocol], payload, options)
   }
 
   /**
