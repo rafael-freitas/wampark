@@ -115,6 +115,19 @@ class Application extends EventEmitter {
       }))
     }
   }
+  /**
+   * Set current session or new session when wamp is connected to a route
+   * @param {Route} route 
+   */
+  setSession (route) {
+    if (this.isWampConnected) {
+      route.setSession(this.currentSession)
+    } else {
+      this.on('wamp.session.start', (session => {
+        route.setSession(session)
+      }))
+    }
+  }
 }
 
 export default new Application()

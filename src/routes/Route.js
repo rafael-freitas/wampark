@@ -29,7 +29,14 @@ import ClientApplication from '../agent/ClientApplication.js'
 import cluster from 'cluster'
 import os from 'os'
 import { v1 as uuid } from 'uuid'
+import { fileURLToPath } from 'url'
+import { dirname } from 'path'
 import application from '../Application.js'
+import app from '../../../../engine/lib/webserver.js'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
 
 const TOTAL_CPU_CORES = process.env.CLUSTER_MAX_FORKS || os.cpus().length
 const worker = cluster.worker
@@ -110,6 +117,8 @@ export default class Route {
     Object.assign(this, properties)
 
     const { uri } = this
+
+    debugger
 
     if (isEmpty(uri)) {
       throw new ReferenceError('property "uri" is required', __filename)
@@ -226,6 +235,8 @@ export default class Route {
    */
   setSession (session) {
     this.session = session
+    debugger
+    app.ApplicationError.assert(session, 'R001: Session not found')
     // ativar cluster?
     if (application.config.cluster) {
       if (cluster.isMaster) {
