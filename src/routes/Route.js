@@ -32,7 +32,7 @@ import { v1 as uuid } from 'uuid'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
 import application from '../Application.js'
-import app from '../../../../engine/lib/webserver.js'
+
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -117,8 +117,6 @@ export default class Route {
     Object.assign(this, properties)
 
     const { uri } = this
-
-    debugger
 
     if (isEmpty(uri)) {
       throw new ReferenceError('property "uri" is required', __filename)
@@ -235,8 +233,7 @@ export default class Route {
    */
   setSession (session) {
     this.session = session
-    debugger
-    app.ApplicationError.assert(session, 'R001: Session not found')
+    application.ApplicationError.assert(session, 'R001: Session not found')
     // ativar cluster?
     if (application.config.cluster) {
       if (cluster.isMaster) {
@@ -413,9 +410,9 @@ export default class Route {
           result.then(resolve).catch((err) => {
             // add toJSON()
             normalizeError(err)
-            if (this.log) {
-              this.printLogAttachFail(err)
-            }
+            // if (this.log) {
+            //   this.printLogAttachFail(err)
+            // }
             reject(err)
           })
         }
