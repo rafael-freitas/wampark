@@ -37,6 +37,7 @@ import application from '../Application.js'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
+const ROUTES_PREFIX = process.env.ROUTES_PREFIX || 'routes'
 
 const TOTAL_CPU_CORES = process.env.CLUSTER_MAX_FORKS || os.cpus().length
 const worker = cluster.worker
@@ -123,6 +124,33 @@ export default class Route {
     }
 
     this.log = this.getLogger()
+
+    const self = this
+
+    Object.assign(this, {
+      
+      clientApplication: {
+
+        component (querySelector) {
+          const protocol = {
+            querySelector
+          }
+          return {
+            method (name, ...args) {
+              const { details } = self.routeController
+
+              return self.session.call(`agent.${details.caller}`, [protocol], {
+                plugin: 'execComponentMethod',
+                payload: {
+                  method: name,
+                  args
+                }
+              })
+            }
+          }
+        },
+      },
+    })
   }
 
   /**
@@ -159,9 +187,9 @@ export default class Route {
     return route
   }
 
-  get clientApplication () {
-    return this.routeController.clientApplication
-  }
+  // get clientApplication () {
+  //   return this.routeController.clientApplication
+  // }
 
   /**
    * @memberof module:lib/routes.Route
@@ -429,8 +457,8 @@ export default class Route {
    * @param  {Mixed} payload the same that "wargs" on procedure
    * @return {Promise}
    */
-  call (name, payload) {
-    return this.routeController.call(name, payload)
+  call (name, payload, options = {}) {
+    return this.routeController.call(name, payload, options)
   }
 
   /**
