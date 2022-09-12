@@ -25,7 +25,6 @@ import isEmpty from 'lodash/isEmpty.js'
 import normalizeError from '../errors/normalize.js'
 import RouteTypes from './RouteTypes.js'
 import logger from '../logger/index.js'
-import ClientApplication from '../agent/ClientApplication.js'
 import cluster from 'cluster'
 import os from 'os'
 import { v1 as uuid } from 'uuid'
@@ -36,8 +35,6 @@ import application from '../Application.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
-
-const ROUTES_PREFIX = process.env.ROUTES_PREFIX || 'routes'
 
 const TOTAL_CPU_CORES = process.env.CLUSTER_MAX_FORKS || os.cpus().length
 const worker = cluster.worker
@@ -53,58 +50,35 @@ const _defaults = {
 
 const snooze = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-export class RouteProtocol {
-  constructor (protocol) {
-    Object.assign(this, {
-      fromSession: null,
-      targetSession: null,
-      fromUser: null,
-      targetUser: null
-    }, protocol)
-  }
-}
+export class Component {
+  constructor (querySelector, route) {
+    this.$querySelector = querySelector
+    this.$route = route
+    this.$protocol = {
+      querySelector
+    }
 
-export class RouteController {
-  constructor ({ args, kwargs, details, session }) {
-    this.args = args
-    this.kwargs = kwargs
-    this.details = details
-    this.session = session
-
-    this.routeProtocol = new RouteProtocol({
-      fromUser: this.details.caller_authid,
-      fromSession: this.details.caller,
-      targetUser: this.details.caller_authid,
-      targetSession: this.details.caller,
-      args: this.args[0]
+    // redirecionar qualquer outra propriedade para method()
+    return new Proxy(this, {
+      get: function (component, field) {
+        // Promise
+        if (field === 'then') {
+          return component
+        }
+        if (field in component) return component[field] // normal case
+        return component.method.bind(component, field)
+      }
     })
   }
 
-  get clientApplication () {
-    return ClientApplication.create(this.routeProtocol)
-  }
-
-  /**
-   * Chamada RPC para uma rota WAMP
-   * @param  {String} name rota: `route.store.appAcoes.list
-   * @param  {Mixed} payload
-   * @param  {Oject} options opções de chamada do RPC via crossbar
-   * @param  {Oject} routeProtocol especificar um RouteProtocol default: null
-   * @return {Promise}
-   */
-  call (name, payload, options = {}, routeProtocol = null) {
-    return this.session.call(name, [routeProtocol || this.routeProtocol], payload, options)
-  }
-
-  /**
-   * Retorna os dados do usuario autenticado
-   * @param {Boolean} returnAllUserData Se TRUE retorna os dados do usuario com seus grupos de permissoes e dados da empresa de contexto. DEFAULT TRUE
-   */
-  getCallerAuthId () {
-    if (!this.details || !this.details.caller_authid) {
-      return null
-    }
-    return this.details.caller_authid
+  method (name, ...args) {
+    return this.$route.session.call(`agent.${this.$route.details.caller}`, [this.$protocol], {
+      plugin: 'execComponentMethod',
+      payload: {
+        method: name,
+        args
+      }
+    })
   }
 }
 
@@ -114,6 +88,8 @@ export default class Route {
 
     // detalhes do caller (quem chamou a rota)
     this.details = {}
+    this.protocol = {}
+    this.clientApplication = this
 
     Object.assign(this, properties)
 
@@ -124,39 +100,33 @@ export default class Route {
     }
 
     this.log = this.getLogger()
+  }
 
-    const self = this
-
-    Object.assign(this, {
-      
-      clientApplication: {
-
-        component (querySelector) {
-          const protocol = {
-            querySelector
-          }
-          return {
-            method (name, ...args) {
-              const { details } = self.routeController
-
-              return self.session.call(`agent.${details.caller}`, [protocol], {
-                plugin: 'execComponentMethod',
-                payload: {
-                  method: name,
-                  args
-                }
-              })
-            }
-          }
-        },
-      },
-    })
+  /**
+   * Create a client side UI component interface
+   * @param {String} querySelector 
+   * @returns 
+   */
+  component (querySelector) {
+    return new Component(querySelector, this)
   }
 
   /**
    * Configura a instância antes de cada chamada
    */
-  setup () {
+  beforeSetup (args = [], kwargs = {}, details = {}) {
+    this.details = details
+    this.protocol = {
+      fromUser: details.caller_authid,
+      fromSession: details.caller,
+      targetUser: details.caller_authid,
+      targetSession: details.caller,
+    }
+  }
+  /**
+   * Configura a instância antes de cada chamada
+   */
+  setup (args = [], kwargs = {}, details = {}) {
     // ...
   }
 
@@ -168,7 +138,6 @@ export default class Route {
    */
   static extend (fromRoute) {
     const route = new this()
-    route.routeController = fromRoute.routeController
     route.session = fromRoute.session
     return route
   }
@@ -261,7 +230,7 @@ export default class Route {
    */
   setSession (session) {
     this.session = session
-    application.ApplicationError.assert(session, 'R001: Session not found')
+    application.ApplicationError.assert(session, 'setSession.E001: Session not found')
     // ativar cluster?
     if (application.config.cluster) {
       if (cluster.isMaster) {
@@ -421,17 +390,9 @@ export default class Route {
   getWrappedEndpoint (...args) {
     return new Promise((resolve, reject) => {
       try {
-        // console.log(`getWrappedEndpoint`, `args[0]`, args[0], `args[1]`, args[1], `args[2]`, args[2])
-        // instanciar o Controller que mantem so parametros da chamada
-        this.routeController = new RouteController({
-          args: args[0],
-          kwargs: args[1],
-          details: args[2],
-          session: this.session
-        })
-
         // metodo opcional para configurar a instancia da rota antes de executar o endpoint
-        this.setup()
+        this.beforeSetup(...args)
+        this.setup(...args)
 
         const result = this.endpoint(...args)
         if (typeof result !== 'undefined' && ((result instanceof Promise || result !== null) && typeof result.then === 'function')) {
@@ -458,7 +419,7 @@ export default class Route {
    * @return {Promise}
    */
   call (name, payload, options = {}) {
-    return this.routeController.call(name, payload, options)
+    return this.session.call(name, [this.protocol], payload, options)
   }
 
   /**
