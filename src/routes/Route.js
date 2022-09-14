@@ -23,6 +23,7 @@
 import defaults from 'lodash/defaults.js'
 import isEmpty from 'lodash/isEmpty.js'
 import normalizeError from '../errors/normalize.js'
+import ApplicationError from '../errors/ApplicationError.js'
 import RouteTypes from './RouteTypes.js'
 import logger from '../logger/index.js'
 import cluster from 'cluster'
@@ -83,6 +84,7 @@ export class Component {
 }
 
 export default class Route {
+
   constructor (properties = {}) {
     properties = defaults(properties, _defaults)
 
@@ -90,6 +92,7 @@ export default class Route {
     this.details = {}
     this.protocol = {}
     this.clientApplication = this
+    this.ApplicationError = ApplicationError
 
     Object.assign(this, properties)
 
@@ -399,9 +402,7 @@ export default class Route {
           result.then(resolve).catch((err) => {
             // add toJSON()
             normalizeError(err)
-            // if (this.log) {
-            //   this.printLogAttachFail(err)
-            // }
+
             reject(err)
           })
         }
