@@ -222,7 +222,7 @@ export default class ApplicationError extends Error {
       }
     }
 
-    // convert "COD001: Meu erro" para {code: 'COD001', message: 'Meu erro'}
+    // convert "COD001: Meu erro" para {code: 'FAMILY#MOD.COD001', message: 'Meu erro', family: 'FAMILY'}
     Object.assign(this, this.stripCodeFromDescription(this.message, this.code || code))
 
     if (!this.code) {
@@ -334,9 +334,17 @@ export default class ApplicationError extends Error {
    */
   stripCodeFromDescription (description, code = '') {
     let strip = { code: code || '', message: String(description) }
-    if (/^[\w]+:/.test(String(description))) {
+    if (/^([\w]*#)?([\w\.]+):/.test(String(description))) {
+      let familyStrip = String(description).split('#')
+      let family = familyStrip.shift()
+      description = familyStrip.join('')
+      if (!description) {
+        description = family
+        family = this.family
+      }
       strip = String(description).split(':')
       return {
+        family,
         code: strip.shift(),
         message: strip.join(':').trim()
       }
