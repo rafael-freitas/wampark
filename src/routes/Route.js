@@ -51,6 +51,36 @@ const _defaults = {
 
 const snooze = ms => new Promise(resolve => setTimeout(resolve, ms))
 
+function parseFunctionToString (obj) {
+  if (Array.isArray(obj)) {
+    for (let index = 0; index < obj.length; index++) {
+      const value = obj[index];
+      if (typeof value === 'function') {
+        obj[index] = String(value)
+      }
+      else if (typeof value === 'object') {
+        obj[index] = parseFunctionToString(value)
+      }
+    }
+    return obj
+  }
+  for (const key in obj) {
+    if (Object.hasOwnProperty.call(obj, key)) {
+      const element = obj[key]
+      if (typeof element === 'function') {
+        obj[key] = String(element)
+      }
+      else if (typeof element === 'object') {
+        obj[key] = parseFunctionToString(element)
+      }
+      else if (Array.isArray(element)) {
+        obj[key] = parseFunctionToString(element)
+      }
+    }
+  }
+  return obj
+}
+
 export class Component {
   constructor (querySelector, route) {
     this.$querySelector = querySelector
@@ -73,6 +103,7 @@ export class Component {
   }
 
   method (name, ...args) {
+    args = parseFunctionToString(args)
     return this.$route.session.call(`agent.${this.$route.details.caller}`, [this.$protocol], {
       plugin: 'execComponentMethod',
       payload: {
