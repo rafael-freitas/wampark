@@ -109,30 +109,37 @@ export default class ApplicationError extends Error {
           type = Type.name.toLowerCase()
         }
 
+        if (type === 'array') {
+          if (!Array.isArray(value)) {
+            assert.fail(new ErrorClass(myMessage || 'Asseration Failed'))
+          }
+          return
+        }
+
         if (typeof value !== type) {
           assert.fail(new ErrorClass(myMessage || 'Asseration Failed'))
         }
       },
       array: (value, myMessage) => {
-        this.type(value, Array, myMessage)
+        assertation.type(value, Array, myMessage)
       },
       string: (value, myMessage) => {
-        this.type(value, String, myMessage)
+        assertation.type(value, String, myMessage)
       },
       number: (value, myMessage) => {
-        this.type(value, Number, myMessage)
+        assertation.type(value, Number, myMessage)
       },
       boolean: (value, myMessage) => {
-        this.type(value, Boolean, myMessage)
+        assertation.type(value, Boolean, myMessage)
       },
       function: (value, myMessage) => {
-        this.type(value, Function, myMessage)
+        assertation.type(value, Function, myMessage)
       },
       object: (value, myMessage) => {
         if (value === null) {
           assert.fail(new ErrorClass(myMessage || 'Asseration Failed'))
         }
-        this.type(value, Object, myMessage)
+        assertation.type(value, Object, myMessage)
       },
       notEmpty: (value, myMessage) => {
         if (value === null) {
