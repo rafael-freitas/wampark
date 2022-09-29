@@ -5,6 +5,13 @@ import os from 'os'
 import { RouteTypes, Route } from './routes/index.js'
 import dotenv from 'dotenv/config'
 
+// enable .env file
+dotenv.config({ path: '.env' })
+
+if (['development', 'dev'].includes(process.env.NODE_ENV)) {
+  dotenv.config({ path: 'dev.env', override: true })
+}
+
 /**
  * @requires {@link module:lib/apllication.Application}
  * @requires {@link module:lib/logger}
