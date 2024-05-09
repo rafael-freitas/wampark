@@ -110,6 +110,11 @@ export class Component {
         method: name,
         args
       }
+    }).then(response => {
+      if (typeof response === 'object' && response && response.$cmd === 'component') {
+        return this.$route.component(response.$id)
+      }
+      return response
     })
   }
 }
