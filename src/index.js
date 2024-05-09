@@ -3,7 +3,7 @@ import logger from './logger/index.js'
 import cluster from 'cluster'
 import os from 'os'
 import { RouteTypes, Route } from './routes/index.js'
-import dotenv from 'dotenv/config'
+import dotenv from 'dotenv'
 
 // enable .env file
 dotenv.config({ path: '.env' })
@@ -11,7 +11,9 @@ dotenv.config({ path: '.env' })
 if (['development', 'dev'].includes(process.env.NODE_ENV)) {
   dotenv.config({ path: 'dev.env', override: true })
 }
-
+if (['production', 'prod'].includes(process.env.NODE_ENV)) {
+  dotenv.config({ path: 'prod.env', override: true })
+}
 /**
  * @requires {@link module:lib/apllication.Application}
  * @requires {@link module:lib/logger}
