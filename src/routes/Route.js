@@ -82,11 +82,14 @@ function parseFunctionToString (obj) {
 }
 
 export class Component {
-  constructor (querySelector, route) {
+  constructor (querySelector, route, http = false) {
     this.$querySelector = querySelector
     this.$route = route
+    this.$http = http
     this.$protocol = {
-      querySelector
+      http,
+      querySelector,
+      commands: []
     }
 
     // redirecionar qualquer outra propriedade para method()
@@ -102,8 +105,23 @@ export class Component {
     })
   }
 
+  toJSON () {
+    return this.$protocol
+  }
+
   method (name, ...args) {
     args = parseFunctionToString(args)
+    if (this.$http === true) {
+      this.$protocol.commands.push({
+        method: name,
+        args
+      })
+      // this.$protocol.payload = {
+      //   method: name,
+      //   args
+      // }
+      return this
+    }
     return this.$route.session.call(`agent.${this.$route.details.caller}`, [this.$protocol], {
       plugin: 'execComponentMethod',
       payload: {
@@ -146,8 +164,10 @@ export default class Route {
    * @param {String} querySelector 
    * @returns 
    */
-  component (querySelector) {
-    return new Component(querySelector, this)
+  component (querySelector, http = false) {
+    const component = new Component(querySelector, this)
+    component.$http = !!http
+    return component
   }
 
   /**
