@@ -441,7 +441,16 @@ export default class ApplicationError extends Error {
       } catch (ex) {
 
       }
-      return new this(err)
+      if (typeof err === 'string') {
+        return new this({
+          type: ErrorTypes.CONNECTION,
+          code: error.error,
+          family: 'wamp',
+          message: err,
+          details: error
+        })
+      }
+      return new this(err, error)
     }
     return new this(error)
   }
