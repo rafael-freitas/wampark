@@ -161,14 +161,27 @@ export default class Route {
 
   /**
    * Create a client side UI component interface
-   * @param {String} querySelector 
+   * @param {String} querySelector Browser document.querySelector() arg
+   * @param {Boolean} http Is a http request? 
    * @returns 
    */
-  component (querySelector, http = false) {
+  getComponentBySelector (querySelector, http = false) {
     const component = new Component(querySelector, this)
     component.$http = !!http
     return component
   }
+
+  /**
+   * Create a client side UI component interface
+   * @param {String} querySelector Browser document.querySelector() arg
+   * @param {Boolean} http Is a http request? 
+   * @returns 
+   */
+  component (querySelector, http = false) {
+    return this.getComponentBySelector(querySelector, http)
+  }
+
+
 
   /**
    * Configura a instância antes de cada chamada
