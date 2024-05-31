@@ -341,20 +341,12 @@ export default class ApplicationError extends Error {
    */
   stripCodeFromDescription (description, code = '') {
     let strip = { code: code || '', message: String(description) }
-    if (/^([\w]*#)?([\w\.]+):/.test(String(description))) {
-      let familyStrip = String(description).split('#')
-      let family = familyStrip.shift()
-      description = familyStrip.join('')
-      if (!description) {
-        description = family
-        family = this.family
-      }
-      strip = String(description).split(':')
-      return {
-        family,
-        code: strip.shift(),
-        message: strip.join(':').trim()
-      }
+    const regex = /^(?:(\w+\.\w+)\/)?(?:(\w+)#)?([\w\.]+):(.*)$/
+    const match = description.match(regex)
+
+    if (match) {
+      const [_, uri, family, code, message] = match
+      return { uri, family, code, message: String(message).trim() }
     }
 
     return strip
