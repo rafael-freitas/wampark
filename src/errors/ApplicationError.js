@@ -52,7 +52,7 @@ export default class ApplicationError extends Error {
       assert(test, new ErrorClass({
         message,
         // copiar o valor static family para a nova instancia
-        family: this.family
+        family: this.family || 'assert'
       }))
     }
 
@@ -72,10 +72,10 @@ export default class ApplicationError extends Error {
             const myMessage = args.pop()
             // se o ultimo parametro nao for uma string usar a mensagem padrao do metodo de assertation
             if (typeof myMessage === 'string') {
-              fn.apply(assert, args, new ErrorClass(myMessage))
+              fn.apply(assert, args, new ErrorClass({message: myMessage, family: 'assert'}))
             } else {
               // usar mensagem padrao
-              fn.apply(assert, args, new ErrorClass(message))
+              fn.apply(assert, args, new ErrorClass({message, family: 'assert'}))
             }
           }
         })
@@ -86,10 +86,10 @@ export default class ApplicationError extends Error {
         Object.assign(assertation, {
           fail: (actual, expected, myMessage, operator, stackStartFn) => {
             if (typeof myMessage === 'string') {
-              fn.apply(assert, actual, expected, new ErrorClass(myMessage), operator, stackStartFn)
+              fn.apply(assert, actual, expected, new ErrorClass({message: myMessage, family: 'assert'}), operator, stackStartFn)
             } else {
               // usar mensagem padrao
-              fn.apply(assert, actual, expected, new ErrorClass(message), operator, stackStartFn)
+              fn.apply(assert, actual, expected, new ErrorClass({message, family: 'assert'}), operator, stackStartFn)
             }
           }
         })
@@ -111,13 +111,13 @@ export default class ApplicationError extends Error {
 
         if (type === 'array') {
           if (!Array.isArray(value)) {
-            assert.fail(new ErrorClass(myMessage || 'Asseration Failed'))
+            assert.fail(new ErrorClass({message: myMessage || 'Asseration Failed', family: 'assert'}))
           }
           return
         }
 
         if (typeof value !== type) {
-          assert.fail(new ErrorClass(myMessage || 'Asseration Failed'))
+          assert.fail(new ErrorClass({message: myMessage || 'Asseration Failed', family: 'assert'}))
         }
       },
       array: (value, myMessage) => {
@@ -137,20 +137,20 @@ export default class ApplicationError extends Error {
       },
       object: (value, myMessage) => {
         if (value === null) {
-          assert.fail(new ErrorClass(myMessage || 'Asseration Failed'))
+          assert.fail(new ErrorClass({message: myMessage || 'Asseration Failed', family: 'assert'}))
         }
         assertation.type(value, Object, myMessage)
       },
       notEmpty: (value, myMessage) => {
         if (value === null) {
-          assert.fail(new ErrorClass(myMessage || 'Null value'))
+          assert.fail(new ErrorClass({message: myMessage || 'Null value', family: 'assert'}))
         }
         switch (typeof value) {
           case 'string':
-            assert.notEqual(value, '', new ErrorClass(myMessage || 'Empty string'))
+            assert.notEqual(value, '', new ErrorClass({message: myMessage || 'Empty string', family: 'assert'}))
             break
           case 'array':
-            assert.notEqual(value.length, 0, new ErrorClass(myMessage || 'Array is empty'))
+            assert.notEqual(value.length, 0, new ErrorClass({message: myMessage || 'Array is empty', family: 'assert'}))
             break
           case 'boolean':
             this.boolean(value, myMessage)
@@ -162,7 +162,7 @@ export default class ApplicationError extends Error {
             this.function(value, myMessage)
             break
           default:
-            assert(value, new ErrorClass(myMessage || 'Assertation error for not empty value'))
+            assert(value, new ErrorClass({message: myMessage || 'Assertation error for not empty value', family: 'assert'}))
         }
       }
     })
@@ -210,7 +210,7 @@ export default class ApplicationError extends Error {
     // se o primeiro parametro for um objeto importar para a instancia
     // {code: 1, message: 'Ocorreu um erro' ...}
     if (typeof properties === 'object') {
-      const { name, stack, message } = properties
+      const { name, stack, message, family } = properties
 
       // copiar todos as propriedades do Error ou JSON para a instancia
       Object.assign(this, properties)
@@ -224,20 +224,37 @@ export default class ApplicationError extends Error {
         this.message = message
       }
 
+      if (family) {
+        this.family = family
+      }
+
       if (stack) {
         this.stack = String(stack)
       }
     }
 
     // convert "COD001: Meu erro" para {code: 'FAMILY#MOD.COD001', message: 'Meu erro', family: 'FAMILY'}
-    Object.assign(this, this.stripCodeFromDescription(this.message, this.code || code))
+    const strip = this.stripCodeFromDescription(this.message, this.code || code)
+    
+    if (strip.code) {
+      this.code = strip.code
+    }
+    if (strip.message) {
+      this.message = strip.message
+    }
+    if (strip.family) {
+      this.family = strip.family
+    }
+    if (strip.uri) {
+      this.uri = strip.uri
+    }
 
     if (!this.code) {
       this.code = 'UKW'
     }
 
     if (!this.message) {
-      this.message = 'unknown error from server'
+      this.message = 'application unknown error'
     }
 
     if (!this.time) {
@@ -341,7 +358,7 @@ export default class ApplicationError extends Error {
    */
   stripCodeFromDescription (description, code = '') {
     let strip = { code: code || '', message: String(description) }
-    const regex = /^(?:(\w+\.\w+)\/)?(?:(\w+)#)?([\w\.]+):(.*)$/
+    const regex = /^(?:([\w\._-]+)\/)?(?:([\w\._-]+)#)?([\w\.]+):(.*)$/
     const match = description.match(regex)
 
     if (match) {
