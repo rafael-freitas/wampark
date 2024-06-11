@@ -58,9 +58,14 @@ if (isMainThread) {
     // application.attachRoute(SampleRouteAfterConnection)
     
 
-    for (let x = 0; x < 16; x++) {
-      console.log(`call ${x}`)
-      application.session.call('routes.callMyRouteSample')
+    for (let x = 0; x < 1; x++) {
+      // console.log(`call ${x}`)
+      application.session.call('routes.callMyRouteSample', [], {
+        counter: x
+      }).catch(err => {
+        let error = ApplicationError.parse(err)
+        // console.log(`Erro capturado ----->`, error)
+      })
     }
     // application.session.call('routes.sampleRouteAfterConnection').catch(err => {
     //   let error = ApplicationError.parse(err)

@@ -12,6 +12,8 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 const WORKERS_LENGTH = os.cpus().length
 
+const WORKERS_MAX = WORKERS_LENGTH + 1
+
 /**
  * @requires events
  * @description
@@ -41,6 +43,12 @@ class Application extends EventEmitter {
    * Identificador de mensagem para workers
    */
   workersMessagesId = 0
+
+  /**
+   * Fila de tarefas para os workers
+   */
+  workersTaskQueue = []
+  workersTaskBusy = new Map()
 
   get session () {
     return this.wamp?.session
@@ -112,7 +120,7 @@ class Application extends EventEmitter {
     return 'mid' + this.workersMessagesId
   }
 
-  createWorker () {
+  createWorker (safe = false) {
     
     const {worker_filepath} = this.settings
 
@@ -120,17 +128,46 @@ class Application extends EventEmitter {
       type: 'module'
     })
 
-    this.workers.set(worker, { busy: false })
+    this.workers.set(worker, { busy: false, safe })
 
     this.log.info(`[worker ${threadId}] New Worker created ${worker.threadId}`)
 
-    // worker.on('message', (message) => {
-    //   logger.info(`Mensagem do worker ${worker.threadId}: ${message}`);
-    // });
+    worker.on('message', (message) => {
+      const {id, result, error} = message
+      // this.log.info(`[worker ${threadId}] Handling message from worker ${worker.threadId}`)
+      
+      this.workers.set(worker, { busy: false, safe })
+      this.assignNextWorkerTask()
+
+      if (this.workersTaskBusy.has(id)) {
+        let task = this.workersTaskBusy.get(id)
+        // this.log.info(`[worker ${threadId}] Handling TASK from worker ${worker.threadId}`)
+        this.workersTaskBusy.delete(id)
+        if (error) {
+          return task.reject(ApplicationError.parse(error))
+        }
+        task.resolve(result)
+        // task.callback(error, result)
+      }
+    })
   
-    // worker.on('error', (error) => {
-    //   logger.error(`Erro no worker: ${error}`);
-    // })
+    worker.on('error', (error) => {
+      error = ApplicationError.parse(error)
+
+      const {id} = error
+
+      this.log.error(`[worker ${worker.threadId}] Erro no worker: ${error.message}`)
+      this.workers.set(worker, { busy: false, safe })
+      this.assignNextWorkerTask()
+      
+      // rejeitar promise do endpoint do _callWorkersEndpoint()
+      if (this.workersTaskBusy.has(id)) {
+        let task = this.workersTaskBusy.get(id)
+        // this.log.info(`[worker ${threadId}] Handling TASK from worker ${worker.threadId}`)
+        this.workersTaskBusy.delete(id)
+        task.reject(ApplicationError.parse(error))
+      }
+    })
   
     worker.on('exit', (code) => {
       if (code !== 0) {
@@ -140,8 +177,58 @@ class Application extends EventEmitter {
       // remover worker
       this.workers.delete(worker)
       // cria um novo worker
-      this.createWorker()
+      this.createWorker(safe)
     })
+  }
+  assignWorkerTask(task) {
+    const worker = this.getIdleWorker()
+    if (worker) {
+      // verificar se o worker atual é o safe (desatolador da fila)
+      let state = this.workers.get(worker)
+      if (state.safe) {
+        // manter sempre o worker safe disponivel
+        this.workers.set(worker, { busy: false, safe: true })
+      }
+      else {
+        this.workers.set(worker, { busy: true, safe: false })
+      }
+
+      // guardar o worker em caso de exit rejeitar o request
+      task.worker = worker
+
+      this.workersTaskBusy.set(task.id, task)
+      worker.postMessage({
+        id: task.id,
+        payload: task.payload
+      })
+    } else {
+      // Adicionar a tarefa à fila se não houver Workers ociosos
+      this.workersTaskQueue.push(task)
+      this.log.warn(`No idle workers available, task added to queue task id (${task.id}). BUSY WORKERS: ${this.workers.size}`)
+      
+      // precisa de mais 1 worker para liberar a fila
+      if (this.workersTaskBusy.size === WORKERS_LENGTH) {
+        if (this.workersTaskBusy.size < WORKERS_MAX) {
+          this.createWorker(true)
+        }
+        this.log.warn(`No idle workers available, create a new worker to save the stack`)
+      }
+    }
+  }
+
+  assignNextWorkerTask() {
+    // apenas tasks que nao foram enviadas ainda
+    if (this.workersTaskQueue.length > 0) {
+      const nextTask = this.workersTaskQueue.shift()
+      this.assignWorkerTask(nextTask)
+    }
+  }
+
+  sendMessageToWorker(task) {
+    const id = this.getNextMessageId()
+    task.id = id
+    this.assignWorkerTask(task)
+    return id
   }
 
   connect (settings = {}) {

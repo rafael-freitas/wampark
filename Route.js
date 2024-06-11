@@ -34,7 +34,7 @@ const __dirname = dirname(__filename)
 
 // const WORKERS_MAX = process.env.WORKERS_MAX || os.cpus().length
 const WORKERS_AWAIT_MAX_ATTEMPTS = 2
-const WORKERS_AWAIT_TIMEOUT = 10
+const WORKERS_AWAIT_TIMEOUT = 100
 
 
 const snooze = ms => new Promise(resolve => setTimeout(resolve, ms))
@@ -150,95 +150,33 @@ export default class Route {
   static _callWorkersEndpoint (session, args, kwargs, details) {
     const log = logger(`[worker ${threadId}] ${this.settings.uri}`)
     return new Promise(async (resolve, reject) => {
-      try {
+      const type = this.settings.uri
 
-        let worker = application.getIdleWorker()
-        // identificador da mensagem
-        const messageId = application.getNextMessageId()
-
-        // sera chamado assim que tiver um worker disponivel
-        const callWorker = () => {
-          const type = this.settings.uri
-
-          // listener de resposta
-          const onMessage = (message) => {
-            application.workers.set(worker, { busy: false })
-            const {id, response, error} = message
-
-            log.info(`onMessage (${messageId}=${id}) from worker ${worker.threadId}`)
-
-            // verificar se a mensagem recebida do worker é deste request
-            if (id === messageId) {
-              worker.removeListener('message', onMessage)
-              // se o worker retornou um erro rejeitar o request
-              if (error) {
-                return reject(error)
-              }
-              resolve(response)
-            }
-          }
-  
-          // listener de erro
-          const onError = (error) => {
-            application.workers.set(worker, { busy: false })
-            worker.removeListener('error', onError)
-            reject(ApplicationError.parse(error))
-          }
-
-          // listener de exit
-          const onExit = (code) => {
-            reject(new ApplicationError(`worker.E001: Worker stopped with exit code ${code}`))
-          }
-  
-          // configurar listeners
-          worker.addListener('message', onMessage)
-          worker.addListener('error', onError)
-          worker.addListener('exit', onExit)
-
-          // colocar o worker em modo ocupado
-          application.workers.set(worker, { busy: true })
-
-          // enviar mensagem para o worker
-          log.info(`Sending message (${messageId}) to worker ${worker.threadId}`)
-          worker.postMessage({
-            id: messageId,
-            type,
-            args: [
-              args,
-              kwargs,
-              details
-            ]
-          })
-        }
-
-        // enquanto todos os workers ocupado, tentar em WORKERS_AWAIT_TIMEOUT
-        if (!worker) {
-          log.info(`All workers is busy: ${messageId}`)
-          let timer = setTimeout(() => {
-            worker = application.getIdleWorker()
-            if (worker) {
-              clearTimeout(timer)
-              callWorker()
-            }
-          }, WORKERS_AWAIT_TIMEOUT)
-        }
-        else {
-          log.info(`call messageId: ${messageId}`)
-          callWorker()
-        }
-      } catch (err) {
-        normalizeError(err)
-        reject(err)
-      }
+      // log.info(`Send message to worker`)
+      await application.sendMessageToWorker({
+        payload: {
+          type,
+          args: [
+            args,
+            kwargs,
+            details
+          ],
+        },
+        resolve,
+        reject
+      })
     })
   }
   static _registerWorker (session) {
     
-    const log = logger(`[worker ${threadId}] ${this.settings.uri}`)
-    log.info(`[worker ${threadId}] Register listener on main thread`)
+    const log = logger(`${this.settings.uri} <worker ${threadId}>`)
+    // log.info(`Register listener on main thread`)
 
     parentPort.on('message', async (message = {}) => {
-      const { type, id, args = [] } = message
+      const { id, payload = {} } = message
+      const {type, args} = payload
+
+      // log.info(`Handling message check type=${type} messgae=${id}`)
 
       // mensagem para esta rota
       if (type === this.settings.uri) {
@@ -247,16 +185,26 @@ export default class Route {
         try {
           const route = this._createInstance(requestContext)
           const result = await route.endpoint(requestContext)
+          // log.info(`Sending response for message ${id}`)
           parentPort.postMessage({
             id,
-            response: result
+            result
           })
         } catch (err) {
-          normalizeError(err)
-          parentPort.postMessage({
-            id,
-            error: err
-          })
+          const error = ApplicationError.parse(err)
+          error.id = id
+          throw error
+          // if (['ReferenceError'].includes(err.name)) {
+          //   // enviar o id da mensagem para o main thread
+          //   error.id = id
+          //   throw error
+          // }
+          // else {
+          //   parentPort.postMessage({
+          //     id,
+          //     error: ApplicationError.parse(err).toObject()
+          //   })
+          // }
         }
       }
     })
