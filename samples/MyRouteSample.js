@@ -3,12 +3,12 @@ import Route from "../Route.js"
 
 export default class MyRouteSample extends Route {
 
-  constructor () {
-    super({
-      type: Route.RouteTypes.RPC,
-      uri: 'routes.myRouteSample'
-    })
+  static settings = {
+    type: Route.RouteTypes.RPC,
+    uri: 'routes.myRouteSample'
   }
+
+  static count = 0
 
   /**
    * @ignore
@@ -16,8 +16,10 @@ export default class MyRouteSample extends Route {
    * @param kwargs
    * @param details
    */
-  async endpoint (args = [], kwargs = {}, details = {}) {
+  async endpoint ({args = [], kwargs = {}, details = {}}) {
     const { a, b } = kwargs
-    return 1 + a + b
+    MyRouteSample.count++
+    console.log('this.count', MyRouteSample.count)
+    return MyRouteSample.count + a + b
   }
 }

@@ -1,12 +1,12 @@
 /**
  * @description
- * addToJsonFunction - Adiciona o metodo toJSON() em um objeto nativo Error
+ * normalizeError - Adiciona o metodo toJSON() em um objeto nativo Error
  * para exportar o erro durante serializacao para JSON
  * @memberof module:lib/errors
- * @method addToJsonFunction
+ * @method normalizeError
  * @param {Error} err Erro a ser inspecionado
  */
-function addToJsonFunction (err) {
+function normalizeError (err) {
   if (err instanceof Error && typeof err.toJSON !== 'function') {
     err.toJSON = function () {
       return Object.assign({}, this, {
@@ -18,4 +18,4 @@ function addToJsonFunction (err) {
   }
 }
 
-export default addToJsonFunction
+export default normalizeError

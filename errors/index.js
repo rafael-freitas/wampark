@@ -1,6 +1,6 @@
 import ErrorTypes from '../ErrorTypes.js'
 import ApplicationError from './ApplicationError.js'
-import normalize from './normalize.js'
+import normalize from './normalizeError.js'
 
 /**
  * @requires {@link module:lib/errors.ErrorTypes}

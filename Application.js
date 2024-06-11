@@ -5,6 +5,17 @@ import ApplicationError from './ApplicationError.js'
 import WampAdapter from './WampAdapter.js'
 import Route from './Route.js'
 
+function isSubclass(childClass, parentClass) {
+  let proto = Object.getPrototypeOf(childClass.prototype);
+  while (proto) {
+    if (proto === parentClass.prototype) {
+      return true;
+    }
+    proto = Object.getPrototypeOf(proto);
+  }
+  return false;
+}
+
 /**
  * @requires events
  * @description
@@ -15,6 +26,10 @@ import Route from './Route.js'
  */
 
 class Application extends EventEmitter {
+
+  get session () {
+    return this.wamp.adapter?.session
+  }
 
   constructor () {
     super()
@@ -48,8 +63,6 @@ class Application extends EventEmitter {
     Object.assign(this.settings, settings)
   }
 
-  
-
   connectToWampServer (settings = {}) {
     // if exist a opened session ignore. Close the active connection first
     if (this.wamp.session) {
@@ -58,77 +71,49 @@ class Application extends EventEmitter {
 
     this.wamp.adapter = new WampAdapter(settings)
     this.wamp.adapter.on('wamp.session.open', this.onSessionOpen.bind(this))
+    this.wamp.adapter.on('wamp.session.close', this.onSessionClose.bind(this))
 
     // abrir conexao
     this.wamp.adapter.open()
-
-
-    // this.wampConnection = connect(Object.assign({
-    //   url: this.config.WAMP_URL,
-    //   realm: this.config.WAMP_REALM,
-    //   authid: this.config.WAMP_AUTHID,
-    //   authpass: this.config.WAMP_AUTHPASS,
-    //   authmethods: [typeof this.config.WAMP_AUTHMETHODS === 'string' ? this.config.WAMP_AUTHMETHODS.split(',') : 'wampcra'],
-    //   onopen: (session) => {
-    //     this.isWampConnected = true
-    //     this.emit('wamp.session.start', session)
-    //     this.currentSession = session
-    //   },
-    //   onclose: (reason, details) => {
-    //     this.isWampConnected = false
-    //     this.emit('wamp.session.close', reason, details)
-    //     this.currentSession = null
-    //   }
-    // }, settings))
   }
 
   onSessionOpen (session) {
-    
+    this.emit('wamp.session.open', session)
+    process.nextTick(() => {
+      this.emit('connected', session)
+    })
   }
   onSessionClose (reason, details) {
-
+    this.emit('wamp.session.close', reason, details)
   }
 
   /**
    * Attach a route for any wamp session starts on application
-   * @param {Route} route 
+   * @param {Route} RouteClass 
    * 
    * Use:
    * application.attachRoute(class MyRoute extends Route {})
    */
-  attachRoute (route) {
+  attachRoute (RouteClass) {
 
-    ApplicationError.assert(route instanceof Route, `attachRoute.A001: route must to be a instance of Route`)
+    ApplicationError.assert(isSubclass(RouteClass, Route), `attachRoute.A001: RouteClass must extends Route`)
 
     if (this.wamp.adapter?.isOpen) {
-      route.attach(this.wamp.adapter.currentSession)
+      RouteClass._attachToSession(this.wamp.adapter.session)
     } else {
       this.on('wamp.session.open', (session => {
-        route.attach(session)
+        RouteClass._attachToSession(session)
       }))
     }
   }
-  /**
-   * Set current session or new session when wamp is connected to a route
-   * @param {Route} route 
-   */
-  // setSession (route) {
-  //   if (this.isWampConnected) {
-  //     route.setSession(this.currentSession)
-  //   } else {
-  //     this.on('wamp.session.start', (session => {
-  //       route.setSession(session)
-  //     }))
-  //   }
-  // }
 
   /**
    * Attach the Agent (protocol processor) RPC route for a Crossbar.io session when it's connected
    * This route is a bridge to link the client application for backend.
    */
-  attachAgentRouteToSession () {
+  attachAgentToSession () {
     console.log('[INFO] Waiting a WAMP session begins to attach an Agent RPC route')
-    this.on('wamp.session.start', (session, details) => {
+    this.on('wamp.session.open', (session, details) => {
       const agentSessionRouteName = `agent.${session.id}`
       // register an Agent RPC procedure for the current session
       session.register(agentSessionRouteName, (args, kwargs, details) => {

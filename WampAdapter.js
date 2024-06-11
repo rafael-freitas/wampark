@@ -68,6 +68,11 @@ export default class WampAdapter extends EventEmitter {
     assert(typeof settings.authid !== 'undefined', 'Informe o `authid` do servidor WAMP em `WAMP_AUTHID`')
     assert(typeof settings.authpass !== 'undefined', 'Informe o `authpass` do servidor WAMP em `WAMP_AUTHPASS`')
 
+    // metodo de autenticacao padrao
+    if (!settings.authmethods) {
+      settings.authmethods = ["wampcra"]
+    }
+
     this.settings = settings
     this.autobahn = autobahn
     this.log = logger('WampAdaper')
@@ -118,13 +123,13 @@ export default class WampAdapter extends EventEmitter {
 
   onOpenConnection (session) {
     const {log} = this
-    log.info(`WAMP Connected on session id (${session.id}) - ${log.ok}`)
+    log.info(`Connected in ${log.colors.yellow(this.settings.url)} -> realm: "${log.colors.yellow(this.settings.realm)}" on session id (${log.colors.green(session.id)}) - ${log.ok}`)
 
     this.applySessionWrappers(session)
   
     // guarda a session atual para acesso externo
     this.connection.currentSession = session
-    this.connection.isOpen = true
+    // this.connection.isOpen = true
   
     // emitir evento de conexao aberta
     this.emit('wamp.session.open', session)
@@ -144,7 +149,7 @@ export default class WampAdapter extends EventEmitter {
         log.warn(`The connection to crossbar.io was closed: ${reason}'`, details)
     }
 
-    this.connection.isOpen = false
+    // this.connection.isOpen = false
 
     this.emit('wamp.session.close', reason, details)
 

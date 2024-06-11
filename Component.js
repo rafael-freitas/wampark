@@ -31,6 +31,18 @@ function parseFunctionToString (obj) {
 
 export default class Component {
 
+  /**
+   * @type {Route}
+   */
+  $route = null
+
+  /**
+   * 
+   * @param {String} querySelector ID ou query para o documento.querySelector()
+   * @param {Route} route instancia de Route
+   * @param {Boolean} http indica se é uma requisicao http
+   * @returns {Component}
+   */
   constructor (querySelector, route, http = false) {
     this.$querySelector = querySelector
     this.$route = route
@@ -65,21 +77,17 @@ export default class Component {
         method: name,
         args
       })
-      // this.$protocol.payload = {
-      //   method: name,
-      //   args
-      // }
       return this
     }
     return this.$route.session.call(`agent.${this.$route.details.caller}`, [this.$protocol], {
-      plugin: 'execComponentMethod',
+      cmd: 'execComponentMethod',
       payload: {
         method: name,
         args
       }
     }).then(response => {
       if (typeof response === 'object' && response && response.$cmd === 'component') {
-        return this.$route.component(response.$id)
+        return this.$route.getComponentBySelector(response.$id)
       }
       return response
     })
