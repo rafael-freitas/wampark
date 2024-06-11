@@ -1,20 +1,16 @@
 import { EventEmitter } from 'events'
+import os from 'os'
+import { fileURLToPath } from 'url'
+import { dirname } from 'path'
+import { Worker, isMainThread, parentPort, workerData, threadId } from 'worker_threads'
+import Route from './Route.js'
 import logger from './logger/index.js'
-
 import ApplicationError from './ApplicationError.js'
 import WampAdapter from './WampAdapter.js'
-import Route from './Route.js'
 
-function isSubclass(childClass, parentClass) {
-  let proto = Object.getPrototypeOf(childClass.prototype);
-  while (proto) {
-    if (proto === parentClass.prototype) {
-      return true;
-    }
-    proto = Object.getPrototypeOf(proto);
-  }
-  return false;
-}
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+const WORKERS_LENGTH = os.cpus().length
 
 /**
  * @requires events
@@ -27,8 +23,27 @@ function isSubclass(childClass, parentClass) {
 
 class Application extends EventEmitter {
 
+  /**
+   * Conexao wamp via WampAdapter
+   * @type {WampAdapter}
+   */
+  wamp = null
+
+  /**
+   * Configurações
+   * @type {Object}
+   */
+  settings = {}
+
+  workers = new Map()
+
+  /**
+   * Identificador de mensagem para workers
+   */
+  workersMessagesId = 0
+
   get session () {
-    return this.wamp.adapter?.session
+    return this.wamp?.session
   }
 
   constructor () {
@@ -46,13 +61,6 @@ class Application extends EventEmitter {
     this.log = logger('Application')
     
     this.settings = {}
-
-    /**
-     * Conexao wamp
-     */
-    this.wamp = {}
-
-    // Object.freeze(this)
   }
 
   /**
@@ -61,30 +69,112 @@ class Application extends EventEmitter {
    */
   setup (settings) {
     Object.assign(this.settings, settings)
+
+    if (typeof settings.wamp === 'object') {
+      this.connect(settings.wamp)
+    }
   }
 
-  connectToWampServer (settings = {}) {
+  start () {
+    if (this.settings.use_worker_threads) {
+      ApplicationError.assert(this.settings.worker_filepath, 'settings.A001: worker_filepath is required when use_worker_threads is enabled!')
+      this.createWorkers()
+    }
+    // abrir conexao
+    this.wamp.open()
+  }
+
+  createWorkers () {
+    // imentantacao da thread main
+    // throw new Error('Workers features not implemented yet')
+
+    if (!isMainThread) {
+      // this.log.info(`[worker ${threadId}] Worker is running and cannot create more workers`)
+      return
+    }
+
+    for (let i = 0; i < WORKERS_LENGTH; i++) {
+      this.createWorker()
+    }
+  }
+
+  getIdleWorker () {
+    for (const [worker, state] of this.workers) {
+      if (!state.busy) {
+        return worker
+      }
+    }
+    return null
+  }
+
+  getNextMessageId () {
+    ++this.workersMessagesId
+    return 'mid' + this.workersMessagesId
+  }
+
+  createWorker () {
+    
+    const {worker_filepath} = this.settings
+
+    const worker = new Worker(worker_filepath, {
+      type: 'module'
+    })
+
+    this.workers.set(worker, { busy: false })
+
+    this.log.info(`[worker ${threadId}] New Worker created ${worker.threadId}`)
+
+    // worker.on('message', (message) => {
+    //   logger.info(`Mensagem do worker ${worker.threadId}: ${message}`);
+    // });
+  
+    // worker.on('error', (error) => {
+    //   logger.error(`Erro no worker: ${error}`);
+    // })
+  
+    worker.on('exit', (code) => {
+      if (code !== 0) {
+        this.log.error(`Worker parou com código de saída ${code}`)
+      }
+
+      // remover worker
+      this.workers.delete(worker)
+      // cria um novo worker
+      this.createWorker()
+    })
+  }
+
+  connect (settings = {}) {
     // if exist a opened session ignore. Close the active connection first
-    if (this.wamp.session) {
+    if (this.session) {
       return console.warn('[application] There is a active WAMP connection. Close it first!')
     }
 
-    this.wamp.adapter = new WampAdapter(settings)
-    this.wamp.adapter.on('wamp.session.open', this.onSessionOpen.bind(this))
-    this.wamp.adapter.on('wamp.session.close', this.onSessionClose.bind(this))
+    if (this.settings.hasConnection) {
+      return console.warn('[application] There is already a WAMP connection confugurated! By pass!')
+    }
 
-    // abrir conexao
-    this.wamp.adapter.open()
+    this.wamp = new WampAdapter(settings)
+    this.wamp.on('wamp.session.open', this.onSessionOpen.bind(this))
+    this.wamp.on('wamp.session.close', this.onSessionClose.bind(this))
+
+    this.settings.hasConnection = true
   }
 
   onSessionOpen (session) {
     this.emit('wamp.session.open', session)
-    process.nextTick(() => {
-      this.emit('connected', session)
-    })
+    if (isMainThread) {
+      process.nextTick(() => {
+        this.emit('connected', session)
+      })
+    }
   }
   onSessionClose (reason, details) {
     this.emit('wamp.session.close', reason, details)
+
+    if (isMainThread) {
+      this.emit('disconnected', reason, details)
+    }
   }
 
   /**
@@ -96,10 +186,10 @@ class Application extends EventEmitter {
    */
   attachRoute (RouteClass) {
 
-    ApplicationError.assert(isSubclass(RouteClass, Route), `attachRoute.A001: RouteClass must extends Route`)
+    ApplicationError.assert(Application.isSubclass(RouteClass, Route), `attachRoute.A001: RouteClass must extends Route`)
 
-    if (this.wamp.adapter?.isOpen) {
-      RouteClass._attachToSession(this.wamp.adapter.session)
+    if (this.wamp?.isOpen) {
+      RouteClass._attachToSession(this.wamp.session)
     } else {
       this.on('wamp.session.open', (session => {
         RouteClass._attachToSession(session)
@@ -120,6 +210,17 @@ class Application extends EventEmitter {
         console.warn(`[WARN] Backend Agent is disabled for this backend session (${agentSessionRouteName})! Try to call directly`)
       })
     })
+  }
+
+  static isSubclass(childClass, parentClass) {
+    let proto = Object.getPrototypeOf(childClass.prototype);
+    while (proto) {
+      if (proto === parentClass.prototype) {
+        return true;
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+    return false;
   }
 }
 

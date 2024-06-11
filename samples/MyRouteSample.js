@@ -19,7 +19,7 @@ export default class MyRouteSample extends Route {
   async endpoint ({args = [], kwargs = {}, details = {}}) {
     const { a, b } = kwargs
     MyRouteSample.count++
-    console.log('this.count', MyRouteSample.count)
+    console.log('[MyRouteSample] this.count', MyRouteSample.count)
     return MyRouteSample.count + a + b
   }
 }

@@ -79,7 +79,7 @@ export default class Component {
       })
       return this
     }
-    return this.$route.session.call(`agent.${this.$route.details.caller}`, [this.$protocol], {
+    return this.$route.session.call(`agent.${this.$route.request.details.caller}`, [this.$protocol], {
       cmd: 'execComponentMethod',
       payload: {
         method: name,

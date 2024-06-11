@@ -22,6 +22,7 @@
  * @example
  * import wampServer from '/lib/wamp-server'
  */
+import { Worker, isMainThread, parentPort, workerData, threadId } from 'worker_threads'
 import { EventEmitter } from 'events'
 import autobahn from 'autobahn'
 import assert from 'assert'
@@ -87,7 +88,7 @@ export default class WampAdapter extends EventEmitter {
     // salvar conexão na instancia do WampAdapter
     this.connection = connection
 
-    log.info(`Connection created for ${log.colors.yellow(settings.url)} -> realm: "${log.colors.yellow(settings.realm)}"`)
+    log.info(`[worker ${threadId}] Connection created for ${log.colors.yellow(settings.url)} -> realm: "${log.colors.yellow(settings.realm)}"`)
 
     connection.onopen = this.onOpenConnection.bind(this)
     connection.onclose = this.onCloseConnection.bind(this)
@@ -123,7 +124,7 @@ export default class WampAdapter extends EventEmitter {
 
   onOpenConnection (session) {
     const {log} = this
-    log.info(`Connected in ${log.colors.yellow(this.settings.url)} -> realm: "${log.colors.yellow(this.settings.realm)}" on session id (${log.colors.green(session.id)}) - ${log.ok}`)
+    log.info(`[worker ${threadId}] Connected in ${log.colors.yellow(this.settings.url)} -> realm: "${log.colors.yellow(this.settings.realm)}" on session id (${log.colors.green(session.id)}) - ${log.ok}`)
 
     this.applySessionWrappers(session)
   
@@ -143,10 +144,10 @@ export default class WampAdapter extends EventEmitter {
     const {log} = this
     switch (reason) {
       case 'unreachable':
-        log.error(`Fail to connect to crossbar.io: "unreachable" - ${log.fail}`, details)
+        log.error(`[worker ${threadId}] Fail to connect to crossbar.io: "unreachable" - ${log.fail}`, details)
         break
       default:
-        log.warn(`The connection to crossbar.io was closed: ${reason}'`, details)
+        log.warn(`[worker ${threadId}] The connection to crossbar.io was closed: ${reason}'`, details)
     }
 
     // this.connection.isOpen = false

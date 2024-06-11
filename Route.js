@@ -19,6 +19,7 @@
 *
 * ******************************************************************************************************
 */
+import { Worker, isMainThread, parentPort, workerData, threadId } from 'worker_threads'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
 import application from './Application.js'
@@ -62,14 +63,8 @@ export default class Route {
 
   constructor () {
 
-    // Object.assign(this.settings, settings)
-
-    // if (!this.settings.uri) {
-    //   throw new ReferenceError('Setting "uri" is required', __filename)
-    // }
   }
 
-  
   async endpoint ({args = [], kwargs = {}, details = {}}) {
 
   }
@@ -96,23 +91,18 @@ export default class Route {
   static _createInstance (requestContext) {
     const route = new this()
     route.session = requestContext.session
-    route._request = requestContext
+    route.request = requestContext
     return route
   }
 
   static _attachToSession (session) {
-    
-    const {settings} = application
-
-    if (settings.use_worker_threads) {
-      this._registerWorker(session)
-    }
-    else {
-      this._registerEndpoint(session)
-    }
+    this._registerEndpoint(session)
   }
 
   static _registerEndpoint (session) {
+
+    // config da aplicacao
+    const {settings} = application
 
     ApplicationError.assert.object(this.settings, '_registerEndpoint.A001: settings must be an object')
 
@@ -124,11 +114,27 @@ export default class Route {
     const wrappedEndpoint = this._callEndpoint.bind(this, session)
 
     if (type === RouteTypes.RPC) {
-      session.register(uri, wrappedEndpoint, options)
-        .then(this._onAttachSuccess.bind(this))
-        .then(this._printLogAttachSuccess.bind(this))
-        .catch(this._onAttachFail.bind(this))
-        .catch(this._printLogAttachFail.bind(this))
+      if (settings.use_worker_threads) {
+        if (isMainThread) {
+          // throw new Error('Workers features not implemented yet')
+          session.register(uri, this._callWorkersEndpoint.bind(this, session), options)
+            .then(this._onAttachSuccess.bind(this))
+            .then(this._printLogAttachSuccess.bind(this))
+            .catch(this._onAttachFail.bind(this))
+            .catch(this._printLogAttachFail.bind(this))
+        }
+        else {
+          this._registerWorker(session)
+        }
+      }
+      else {
+        session.register(uri, wrappedEndpoint, options)
+          .then(this._onAttachSuccess.bind(this))
+          .then(this._printLogAttachSuccess.bind(this))
+          .catch(this._onAttachFail.bind(this))
+          .catch(this._printLogAttachFail.bind(this))
+      }
+      
     }
     else {
       if (type === RouteTypes.PUBSUB) {
@@ -141,8 +147,120 @@ export default class Route {
     }
   }
 
-  static _registerWorker () {
-    throw new Error('Workers features not implemented yet')
+  static _callWorkersEndpoint (session, args, kwargs, details) {
+    const log = logger(`[worker ${threadId}] ${this.settings.uri}`)
+    return new Promise(async (resolve, reject) => {
+      try {
+
+        let worker = application.getIdleWorker()
+        // identificador da mensagem
+        const messageId = application.getNextMessageId()
+
+        // sera chamado assim que tiver um worker disponivel
+        const callWorker = () => {
+          const type = this.settings.uri
+
+          // listener de resposta
+          const onMessage = (message) => {
+            application.workers.set(worker, { busy: false })
+            const {id, response, error} = message
+
+            log.info(`onMessage (${messageId}=${id}) from worker ${worker.threadId}`)
+
+            // verificar se a mensagem recebida do worker é deste request
+            if (id === messageId) {
+              worker.removeListener('message', onMessage)
+              // se o worker retornou um erro rejeitar o request
+              if (error) {
+                return reject(error)
+              }
+              resolve(response)
+            }
+          }
+  
+          // listener de erro
+          const onError = (error) => {
+            application.workers.set(worker, { busy: false })
+            worker.removeListener('error', onError)
+            reject(ApplicationError.parse(error))
+          }
+
+          // listener de exit
+          const onExit = (code) => {
+            reject(new ApplicationError(`worker.E001: Worker stopped with exit code ${code}`))
+          }
+  
+          // configurar listeners
+          worker.addListener('message', onMessage)
+          worker.addListener('error', onError)
+          worker.addListener('exit', onExit)
+
+          // colocar o worker em modo ocupado
+          application.workers.set(worker, { busy: true })
+
+          // enviar mensagem para o worker
+          log.info(`Sending message (${messageId}) to worker ${worker.threadId}`)
+          worker.postMessage({
+            id: messageId,
+            type,
+            args: [
+              args,
+              kwargs,
+              details
+            ]
+          })
+        }
+
+        // enquanto todos os workers ocupado, tentar em WORKERS_AWAIT_TIMEOUT
+        if (!worker) {
+          log.info(`All workers is busy: ${messageId}`)
+          let timer = setTimeout(() => {
+            worker = application.getIdleWorker()
+            if (worker) {
+              clearTimeout(timer)
+              callWorker()
+            }
+          }, WORKERS_AWAIT_TIMEOUT)
+        }
+        else {
+          log.info(`call messageId: ${messageId}`)
+          callWorker()
+        }
+      } catch (err) {
+        normalizeError(err)
+        reject(err)
+      }
+    })
+  }
+  static _registerWorker (session) {
+    
+    const log = logger(`[worker ${threadId}] ${this.settings.uri}`)
+    log.info(`[worker ${threadId}] Register listener on main thread`)
+
+    parentPort.on('message', async (message = {}) => {
+      const { type, id, args = [] } = message
+
+      // mensagem para esta rota
+      if (type === this.settings.uri) {
+        const [_args, kwargs, details] = args
+        const requestContext = {session, args: _args, kwargs, details}
+        try {
+          const route = this._createInstance(requestContext)
+          const result = await route.endpoint(requestContext)
+          parentPort.postMessage({
+            id,
+            response: result
+          })
+        } catch (err) {
+          normalizeError(err)
+          parentPort.postMessage({
+            id,
+            error: err
+          })
+        }
+      }
+    })
+
   }
 
   static _callEndpoint (session, args, kwargs, details) {
@@ -178,20 +296,6 @@ export default class Route {
       configurable: false,
     })
   }
-
-
-  
-
-  // /**
-  //  * Register or subscribe this route into a session
-  //  * @param session Autobahn session
-  //  */
-  // setSession (session) {
-    
-  //   ApplicationError.assert(session, 'setSession.E001: Session not found')
-
-  //   this.session = session
-  // }
 
   /**
    * @memberof module:lib/routes.Route
@@ -238,11 +342,11 @@ export default class Route {
     const isRegister = (this.settings.type === RouteTypes.RPC)
     const isSubscribe = (this.settings.type === RouteTypes.PUBSUB)
     if (isRegister) {
-      log.info(`Route RPC <${log.colors.silly(this.settings.uri)}> registered - ${log.ok}`)
+      log.info(`[worker ${threadId}] Route RPC <${log.colors.silly(this.settings.uri)}> registered - ${log.ok}`)
     } else if (isSubscribe) {
-      log.info(`Route PUBSUB <${log.colors.silly(this.settings.uri)}> subscribed - ${log.ok}`)
+      log.info(`[worker ${threadId}] Route PUBSUB <${log.colors.silly(this.settings.uri)}> subscribed - ${log.ok}`)
     } else {
-      log.info(`Route HTTP <${log.colors.silly(this.settings.uri)}> attached - ${log.ok}`)
+      log.info(`[worker ${threadId}] Route HTTP <${log.colors.silly(this.settings.uri)}> attached - ${log.ok}`)
     }
 
     return result
