@@ -8,41 +8,19 @@ import { isMainThread } from 'worker_threads'
 
 const __filename = fileURLToPath(import.meta.url)
 
-const PORT = 9001
-const HOSTNAME = 'localhost'
-const WAMP_URL = `ws://${HOSTNAME}:${PORT}/ws`
-const WAMP_REALM = 'realm1'
-const WAMP_AUTHID = 'backend-service-user'
-const WAMP_AUTHPASS = 'authP4555ec3tB4ck'
-
-
 application.setup({
   // nao usar multi threads
-  use_worker_threads: true,
+  use_worker_threads: process.env.USE_WORKER_THREADS,
   worker_filepath: __filename,
 
-  // Modo de configuração de conexão 1
+  // Crossbar.io
   wamp: {
-    url: WAMP_URL,
-    realm: WAMP_REALM,
-    authid: WAMP_AUTHID,
-    authpass: WAMP_AUTHPASS,
+    url: process.env.WAMP_URL,
+    realm: process.env.WAMP_REALM,
+    authid: process.env.WAMP_AUTHID,
+    authpass: process.env.WAMP_AUTHPASS,
   }
 })
-
-// Modo de configuração de conexão 2
-// application.connect({
-//   url: WAMP_URL,
-//   realm: WAMP_REALM,
-//   authid: WAMP_AUTHID,
-//   authpass: WAMP_AUTHPASS,
-// })
-
-// evento disparado quando a conexao foi estabelecida 1
-// application.on('wamp.session.open', (session) => {
-//   session.call('routes.callMyRouteSample')
-// })
-
 
 
 application.attachRoute(MyRouteSample)
@@ -58,13 +36,13 @@ if (isMainThread) {
     // application.attachRoute(SampleRouteAfterConnection)
     
 
-    for (let x = 0; x < 1; x++) {
+    for (let x = 0; x < 10; x++) {
       // console.log(`call ${x}`)
       application.session.call('routes.callMyRouteSample', [], {
         counter: x
       }).catch(err => {
         let error = ApplicationError.parse(err)
-        // console.log(`Erro capturado ----->`, error)
+        console.log(`Erro capturado ----->`, error)
       })
     }
     // application.session.call('routes.sampleRouteAfterConnection').catch(err => {
