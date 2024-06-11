@@ -1,4 +1,4 @@
-import ErrorTypes from './ErrorTypes.js'
+import ErrorTypes from '../ErrorTypes.js'
 import ApplicationError from './ApplicationError.js'
 import normalize from './normalize.js'
 

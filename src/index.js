@@ -1,19 +1,23 @@
-import application from './Application.js'
-import logger from './logger/index.js'
-import cluster from 'cluster'
 import os from 'os'
-import { RouteTypes, Route } from './routes/index.js'
 import dotenv from 'dotenv'
+import { Worker } from 'worker_threads'
+
+import application from '../Application.js'
+import logger from '../logger/index.js'
+
+import { RouteTypes, Route } from '../routes/index.js'
+
+
+// Defina o ambiente padrão como desenvolvimento
+const env = process.env.NODE_ENV || 'development';
 
 // enable .env file
 dotenv.config({ path: '.env' })
 
-if (['development', 'dev'].includes(process.env.NODE_ENV)) {
-  dotenv.config({ path: 'dev.env', override: true })
-}
-if (['production', 'prod'].includes(process.env.NODE_ENV)) {
-  dotenv.config({ path: 'prod.env', override: true })
-}
+// Mapeie os diferentes ambientes para seus respectivos arquivos .env
+dotenv.config({ path: `.env.${env}`, override: true })
+
+
 /**
  * @requires {@link module:lib/apllication.Application}
  * @requires {@link module:lib/logger}
@@ -30,7 +34,7 @@ if (['production', 'prod'].includes(process.env.NODE_ENV)) {
  */
 
 // utilizar o parametro config.maxClusterForks do CONFIG quando for um numero valido maior que 0, se nao usar o maximo de CPUs
-const TOTAL_CPU_CORES = process.env.CLUSTER_MAX_FORKS || os.cpus().length
+const WORKERS_MAX = process.env.WORKERS_MAX || os.cpus().length
 
 function configureApplicationInstance (extraConfigs = {}) {
   // CLONE ENVOIRIMENT VALUES FOR CONFIG

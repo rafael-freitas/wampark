@@ -1,10 +1,11 @@
 
-import application from '../src/index.js'
+import Route from "../Route.js"
 
-export default class MyRouteSample extends application.Route {
+export default class MyRouteSample extends Route {
+
   constructor () {
     super({
-      type: application.RouteTypes.RPC,
+      type: Route.RouteTypes.RPC,
       uri: 'routes.myRouteSample'
     })
   }

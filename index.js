@@ -1,8 +1,16 @@
-import application from './src/index.js'
+import Application from "./Application.js"
+import Route from "./Route.js"
+import RouteTypes from "./RouteTypes.js"
+import Component from "./Component.js"
+import WampAdapter from "./WampAdapter.js"
+import ApplicationError from "./ApplicationError.js"
 
-// set application to global to aviod multiple instances
-if (!global._APPLICATION) {
-  global._APPLICATION = application
+export default Application
+
+export {
+  ApplicationError,
+  WampAdapter,
+  Route,
+  RouteTypes,
+  Component,
 }
-
-export default global._APPLICATION || application
