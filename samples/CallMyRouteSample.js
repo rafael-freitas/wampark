@@ -7,11 +7,11 @@ const snooze = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 export default class CallMyRouteSample extends Route {
 
-  static settings = {
-    type: Route.RouteTypes.RPC,
-    uri: 'routes.callMyRouteSample'
+  static {
+    this.uri = 'routes.callMyRouteSample'
+    this.type = Route.RouteTypes.RPC
   }
-
+  
   /**
    * @ignore
    * @param args

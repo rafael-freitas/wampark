@@ -3,14 +3,14 @@ import { fileURLToPath } from 'url'
 import application, { ApplicationError } from '../index.js'
 import MyRouteSample from './MyRouteSample.js'
 import CallMyRouteSample from './CallMyRouteSample.js'
-import SampleRouteAfterConnection from './SampleRouteAfterConnection.js'
+// import SampleRouteAfterConnection from './SampleRouteAfterConnection.js'
 import { isMainThread } from 'worker_threads'
 
 const __filename = fileURLToPath(import.meta.url)
 
 application.setup({
   // nao usar multi threads
-  use_worker_threads: process.env.USE_WORKER_THREADS,
+  use_worker_threads: process.env.USE_WORKER_THREADS === 'true',
   worker_filepath: __filename,
 
   // Crossbar.io

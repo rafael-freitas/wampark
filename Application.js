@@ -326,6 +326,9 @@ class Application extends EventEmitter {
   }
 
   static isSubclass(childClass, parentClass) {
+    if (!childClass.prototype) {
+      return false
+    }
     let proto = Object.getPrototypeOf(childClass.prototype);
     while (proto) {
       if (proto === parentClass.prototype) {

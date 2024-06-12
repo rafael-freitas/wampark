@@ -78,14 +78,15 @@ if (isMainThread) {
 import { Route } from 'wampark';
 
 export default class MyRouteSample extends Route {
-  static settings = {
-    type: Route.RouteTypes.RPC,
-    uri: 'routes.myRouteSample'
+  static {
+    this.type = Route.RouteTypes.RPC,
+    this.uri = 'routes.myRouteSample'
   };
 
   static count = 0;
 
   async endpoint ({args = [], kwargs = {}, details = {}}) {
+    this.constructor.count++
     const { counter } = kwargs;
     return counter * 2;
   }

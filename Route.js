@@ -30,33 +30,30 @@ import Component from './Component.js'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-// const WORKERS_MAX = process.env.WORKERS_MAX || os.cpus().length
-const WORKERS_AWAIT_MAX_ATTEMPTS = 2
-const WORKERS_AWAIT_TIMEOUT = 100
-
-
-const snooze = ms => new Promise(resolve => setTimeout(resolve, ms))
-
 export default class Route {
 
   static RouteTypes = RouteTypes
 
   /**
-   * Configurações da rota
+   * URI da rota
    */
-  static settings = {
-    /**
-     * URI da rota
-     */
-    uri: undefined,
-    /**
-     * Tipo da rota - RPC, PUBSUB, POST, GET...
-     */
-    type: RouteTypes.RPC,
-    /**
-     * Opções de registro da rota
-     */
-    options: {}
+  static uri = undefined
+  /**
+   * Tipo da rota - RPC, PUBSUB, POST, GET...
+   */
+  static type = RouteTypes.RPC
+  /**
+   * Opções de registro da rota
+   */
+  static options = {}
+
+  static {
+    // inicializacao padrao
+    this._initialize()
+  }
+
+  static _initialize() {
+    this.log = logger(this.name)
   }
 
   /**
@@ -113,6 +110,8 @@ export default class Route {
   }
 
   static _attachToSession (session) {
+    // reconfigurar classe
+    this._initialize()
     this._registerEndpoint(session)
   }
 
@@ -121,11 +120,11 @@ export default class Route {
     // config da aplicacao
     const {settings} = application
 
-    ApplicationError.assert.object(this.settings, '_registerEndpoint.A001: settings must be an object')
+    // ApplicationError.assert.object(this.settings, '_registerEndpoint.A001: settings must be an object')
 
-    const {uri, type, options} = this.settings
+    const {uri, type, options} = this
     
-    ApplicationError.assert.string(uri, '_registerEndpoint.A001: settings.uri must be a string')
+    ApplicationError.assert.string(uri, '_registerEndpoint.A001: uri must be a string')
     ApplicationError.assert.string(type, '_registerEndpoint.A001: settings.type must be a string')
 
     const wrappedEndpoint = this._callEndpoint.bind(this, session)
@@ -165,9 +164,9 @@ export default class Route {
   }
 
   static _callWorkersEndpoint (session, args, kwargs, details) {
-    const log = logger(`[worker ${threadId}] ${this.settings.uri}`)
+    const log = logger(`[worker ${threadId}] ${this.uri}`)
     return new Promise(async (resolve, reject) => {
-      const type = this.settings.uri
+      const type = this.uri
 
       // log.info(`Send message to worker`)
       await application.sendMessageToWorker({
@@ -186,7 +185,7 @@ export default class Route {
   }
   static _registerWorker (session) {
     
-    const log = logger(`${this.settings.uri} <worker ${threadId}>`)
+    const log = logger(`${this.uri} <worker ${threadId}>`)
     // log.info(`Register listener on main thread`)
 
     parentPort.on('message', async (message = {}) => {
@@ -196,7 +195,7 @@ export default class Route {
       // log.info(`Handling message check type=${type} messgae=${id}`)
 
       // mensagem para esta rota
-      if (type === this.settings.uri) {
+      if (type === this.uri) {
         const [_args, kwargs, details] = args
         const requestContext = {session, args: _args, kwargs, details}
         try {
@@ -282,8 +281,8 @@ export default class Route {
    * @return {Object}
    */
   static _printLogAttachFail (err) {
-    const log = logger(this.settings.id || this.settings.uri)
-    log.error(`Route <${log.colors.silly(this.settings.uri)}> failed: ${JSON.stringify(err)} - ${log.fail}`)
+    const {log} = this
+    log.error(`Route <${log.colors.silly(this.uri)}> failed: ${JSON.stringify(err)} - ${log.fail}`)
     return Promise.reject(err)
   }
 
@@ -292,15 +291,15 @@ export default class Route {
    * @return {Object}
    */
   static _printLogAttachSuccess (result) {
-    const log = logger(this.settings.id || this.settings.uri)
-    const isRegister = (this.settings.type === RouteTypes.RPC)
-    const isSubscribe = (this.settings.type === RouteTypes.PUBSUB)
+    const {log} = this
+    const isRegister = (this.type === RouteTypes.RPC)
+    const isSubscribe = (this.type === RouteTypes.PUBSUB)
     if (isRegister) {
-      log.info(`[worker ${threadId}] Route RPC <${log.colors.silly(this.settings.uri)}> registered - ${log.ok}`)
+      log.info(`[worker ${threadId}] Route RPC <${log.colors.silly(this.uri)}> registered - ${log.ok}`)
     } else if (isSubscribe) {
-      log.info(`[worker ${threadId}] Route PUBSUB <${log.colors.silly(this.settings.uri)}> subscribed - ${log.ok}`)
+      log.info(`[worker ${threadId}] Route PUBSUB <${log.colors.silly(this.uri)}> subscribed - ${log.ok}`)
     } else {
-      log.info(`[worker ${threadId}] Route HTTP <${log.colors.silly(this.settings.uri)}> attached - ${log.ok}`)
+      log.info(`[worker ${threadId}] Route HTTP <${log.colors.silly(this.uri)}> attached - ${log.ok}`)
     }
 
     return result

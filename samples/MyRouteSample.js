@@ -2,12 +2,12 @@
 import ApplicationError from "../ApplicationError.js"
 import Route from "../Route.js"
 import { Worker, isMainThread, parentPort, workerData, threadId } from 'worker_threads'
+import RouteTypes from "../RouteTypes.js"
 
 export default class MyRouteSample extends Route {
 
-  static settings = {
-    type: Route.RouteTypes.RPC,
-    uri: 'routes.myRouteSample'
+  static {
+    this.uri = 'routes.myRouteSample'
   }
 
   static count = 0
@@ -21,7 +21,9 @@ export default class MyRouteSample extends Route {
   async endpoint ({args = [], kwargs = {}, details = {}}) {
     const { a, b } = kwargs
     MyRouteSample.count++
-    console.log(`[worker ${threadId}]`,'snooze a little')
+    console.log(`[worker ${threadId}]`,'snooze a little', this.constructor.uri)
+
+    this.constructor.log.info('teste de log -> ' + this.constructor.uri)
 
     // throw new ApplicationError('endpoint.A001: erro de teste')
 
