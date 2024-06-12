@@ -231,8 +231,8 @@ import WampAdapter from 'wampark';
 const wampAdapter = new WampAdapter({
   url: 'ws://localhost:9001/ws',
   realm: 'realm1',
-  authid: 'backend-service-user',
-  authpass: 'authP4555ec3tB4ck',
+  authid: 'yourUserHere',
+  authpass: 'yourPassHere',
   autoconnect: true,
   onopen: (session) => {
     console.log('Connected to WAMP server', session);
@@ -251,9 +251,7 @@ The `ApplicationError` class extends the native `Error` class and represents err
 
 | Property/Method                | Description                                                                                      |
 |--------------------------------|--------------------------------------------------------------------------------------------------|
-|
-
- `assert`                       | Wrapper for Node.js `assert` module that throws `ApplicationError` on assertion failure.         |
+| `assert`                       | Wrapper for Node.js `assert` module that throws `ApplicationError` on assertion failure.         |
 | `toObject()`                   | Converts an error to a plain object.                                                             |
 | `throw()`                      | Throws the error if it is throwable.                                                             |
 | `setCode(code)`                | Sets the error code with the family prefix.                                                      |
@@ -261,7 +259,7 @@ The `ApplicationError` class extends the native `Error` class and represents err
 | `setFamily(family)`            | Sets the family prefix for the error code.                                                       |
 | `toJSON()`                     | Converts the error instance to a JSON string.                                                    |
 | `toString()`                   | Converts the error instance to a string.                                                         |
-| `stripCodeFromDescription(description, code)` | Parses the error code and message from the description.                             |
+| `stripCodeFromDescription(description, code)` | Parses the error code and message from the description.                           |
 | `wrapper(error)`               | Wraps a native error as an `ApplicationError`.                                                   |
 | `cancelProc()`                 | Creates a cancellable procedure error.                                                           |
 | `parse(error)`                 | Parses a WAMP or native error into an `ApplicationError`.                                        |
@@ -400,10 +398,10 @@ export default class ServiceAuthorizer extends Route {
       const { log } = this.constructor;
       
       try {
-        log.debug(`grant access action: [${log.colors.data(action)}] on <${log.colors.data(uri)}> user: ${log.colors.data(authid)} on session ${log.colors.data(session)} - ${log.ok}`);
+        log.debug(`Crant access action: [${log.colors.data(action)}] on <${log.colors.data(uri)}> user: ${log.colors.data(authid)} on session ${log.colors.data(session)} - ${log.ok}`);
         resolve({ allow: true, disclose: true });
       } catch (error) {
-        log.error(`access deny action: [${log.colors.data(action)}] on <${log.colors.data(uri)}> user: ${log.colors.data(authid)} on session ${log.colors.data(session)} - ${log.ok}`, error);
+        log.error(`Access deny action: [${log.colors.data(action)}] on <${log.colors.data(uri)}> user: ${log.colors.data(authid)} on session ${log.colors.data(session)} - ${log.ok}`, error);
         resolve({ allow: false, disclose: false });
       }
     });
@@ -412,6 +410,8 @@ export default class ServiceAuthorizer extends Route {
 ```
 
 #### ServiceTicketAuthentication
+
+Example of a service to authenticate users on Application in the realm:
 
 ```javascript
 import bcrypt from 'bcrypt';
@@ -489,102 +489,7 @@ export default class ServiceTicketAuthentication extends Route {
     });
   }
 
-  verifyJwtToken(payload) {
-    const { ticket = {}, authid, realm } = payload;
-    const decoded = jwt.verify(ticket.token, JWT_SALT);
-
-    if (realm !== decoded.realm) {
-      throw new ApplicationError('AUTHTE001: Token is invalid for the realm');
-    }
-    if (!decoded.user) {
-      throw new ApplicationError('AUTHTE002: Token user is invalid');
-    }
-    return { ...payload, authid: decoded.user };
-  }
-
-  selectUser(payload) {
-    const { authid, ticket, realm } = payload;
-    const { log } = this.constructor;
-
-    if (!authid) throw new ApplicationError('AUTHTD000: authid is required');
-    log.info('Select user by authid', log.colors.green(authid));
-
-    return Users.findByLogin(authid)
-      .then(this.verifyIfUserExist.bind(this))
-      .then(this.verifyIfUserIsActive.bind(this))
-      .then((user) => ({ user, authid, ticket, realm }));
-  }
-
-  selectUserById(payload) {
-    const { authid, ticket, realm } = payload;
-    const { log } = this.constructor;
-
-    if (!authid) throw new ApplicationError('AUTHTD000: authid is required');
-    log.info('Select user by authid', log.colors.green(authid));
-
-    return Users.findOne({ _id: authid })
-      .then(this.verifyIfUserExist.bind(this))
-      .then(this.verifyIfUserIsActive.bind(this))
-      .then((user) => ({ user, authid, ticket, realm }));
-  }
-
-  verifyIfUserExist(user) {
-    if (isEmpty(user)) throw new ApplicationError('AUTHTD001: User not found');
-    return user
-
-;
-  }
-
-  verifyIfUserIsActive(user) {
-    const profile = user.profiles?.find((x) => x.type === 'user' && x.active === true);
-    if (!profile) throw new ApplicationError('AUTHTX001: User inactive');
-    return user;
-  }
-
-  comparePassword(payload) {
-    const { authid, ticket, user } = payload;
-    const { log } = this.constructor;
-
-    return new Promise((resolve, reject) => {
-      if (isEmpty(user)) return reject(new ApplicationError('AUTHTA001: User or ticket is empty'));
-
-      const userPassword = user.password;
-
-      bcrypt.compare(ticket.password, userPassword)
-        .then((isPasswordValid) => isPasswordValid ? { ...payload, user } : reject(new ApplicationError('AUTHTA004: Invalid password')))
-        .then(resolve)
-        .catch((err) => {
-          if (err && err.code) {
-            return reject(err);
-          }
-          log.warn(`Check password failed <${ticket.password}> for <${userPassword}>`);
-          reject(new ApplicationError('AUTHTA005: Check password failed', err));
-        });
-    });
-  }
-
-  createWebToken(payload) {
-    const { authid, ticket, user, realm } = payload;
-
-    if (isEmpty(user) || isEmpty(ticket)) {
-      throw new ApplicationError('AUTHTD001: Payload must contain user and credentials objects');
-    }
-
-    if (!user._id) {
-      throw new ApplicationError('AUTHTD002: user _id is missing');
-    }
-
-    const token = jwt.sign({
-      realm,
-      user: user._id,
-      _id: user._id,
-      identifier: user.login,
-      email: user.email,
-    }, JWT_SALT);
-
-    ticket.token = token;
-    return payload;
-  }
+  // ... your implementaion here
 
   createSession(payload) {
     const { user, authid, ticket, realm } = payload;
