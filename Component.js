@@ -53,6 +53,8 @@ export default class Component {
       commands: []
     }
 
+    this.$targetSessionId = this.$route._getTargetSessionId()
+
     // redirecionar qualquer outra propriedade para method()
     return new Proxy(this, {
       get: function (component, field) {
@@ -79,7 +81,7 @@ export default class Component {
       })
       return this
     }
-    return this.$route.session.call(`agent.${this.$route.request.details.caller}`, [this.$protocol], {
+    return this.$route.session.call(`agent.${this.$targetSessionId}`, [this.$protocol], {
       cmd: 'execComponentMethod',
       payload: {
         method: name,

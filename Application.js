@@ -69,6 +69,9 @@ class Application extends EventEmitter {
     this.log = logger('Application')
     
     this.settings = {}
+
+    // carregar variaveis de ambiente para o settings
+    Object.assign(this.settings, process.env)
   }
 
   /**
@@ -90,6 +93,7 @@ class Application extends EventEmitter {
     }
     // abrir conexao
     this.wamp.open()
+    this.emit('start')
   }
 
   createWorkers () {

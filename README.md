@@ -41,8 +41,6 @@ import { isMainThread } from 'worker_threads';
 
 const __filename = fileURLToPath(import.meta.url);
 
-config(); // Load environment variables from .env file
-
 application.setup({
   use_worker_threads: process.env.USE_WORKER_THREADS === 'true',
   worker_filepath: __filename,

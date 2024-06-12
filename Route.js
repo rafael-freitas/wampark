@@ -14,8 +14,6 @@
 *   @update     2024-06-10 00:13:12 by Rafael
 *
 *   @class Route
-*   @memberof module:lib/routes
-*   @requires {@link module:lib/routes.RouteTypes}
 *
 * ******************************************************************************************************
 */
@@ -61,6 +59,16 @@ export default class Route {
     options: {}
   }
 
+  /**
+   * {session, args, kwargs, details, protocol, context}
+   */
+  request = {
+    protocol: {
+      origin: {}
+    },
+    context: {},
+  }
+
   constructor () {
 
   }
@@ -82,6 +90,15 @@ export default class Route {
     return component
   }
 
+  /**
+   * Retorna o ID da session para chamadas do Agent em componentes
+   * Ex: agent.SESSION_ID
+   * @returns {Number}
+   */
+  _getTargetSessionId () {
+    return this.request.details.caller
+  }
+
 
   // -------------------------------
   // PRIVATE STATIC
@@ -91,7 +108,7 @@ export default class Route {
   static _createInstance (requestContext) {
     const route = new this()
     route.session = requestContext.session
-    route.request = requestContext
+    Object.assign(route.request, requestContext)
     return route
   }
 
@@ -246,9 +263,6 @@ export default class Route {
   }
 
   /**
-   * @memberof module:lib/routes.Route
-   * @method onAttachSuccess
-   * @instance
    * @param {Object} result
    * @return {Object}
    */
@@ -257,9 +271,6 @@ export default class Route {
   }
 
   /**
-   * @memberof module:lib/routes.Route
-   * @method onAttachFail
-   * @instance
    * @param {Object} err
    */
   static _onAttachFail (err) {
@@ -267,8 +278,6 @@ export default class Route {
   }
 
   /**
-   * @memberof module:lib/routes.Route
-   * @instance
    * @param {Object} err
    * @return {Object}
    */
@@ -279,9 +288,6 @@ export default class Route {
   }
 
   /**
-   * @memberof module:lib/routes.Route
-   * @method printLogAttachSuccess
-   * @instance
    * @param {Object} result
    * @return {Object}
    */
