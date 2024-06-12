@@ -96,7 +96,7 @@ export default class Route {
    * @returns {Number}
    */
   _getTargetSessionId () {
-    return this.request.details.caller
+    return this.request.protocol?.origin?.caller
   }
 
 

@@ -37,6 +37,11 @@ class Application extends EventEmitter {
    */
   settings = {}
 
+  /**
+   * Plugins acoplados
+   */
+  plugins = new Map()
+
   workers = new Map()
 
   /**
@@ -74,6 +79,13 @@ class Application extends EventEmitter {
     Object.assign(this.settings, process.env)
   }
 
+  plugin (plugin) {
+    if (typeof plugin.install === 'function') {
+      plugin.install()
+      this.plugins.set(plugin, {installed: true})
+    }
+  }
+
   /**
    * Setup and start the Application with custom settings
    * @param {Object} settings
@@ -86,11 +98,21 @@ class Application extends EventEmitter {
     }
   }
 
+  startPlugins () {
+    for (const [plugin, state] of this.plugins) {
+      if (!state.started && typeof plugin.start === 'function') {
+        plugin.start()
+        this.plugins.set(plugin, {installed: true, started: true})
+      }
+    }
+  }
+
   start () {
     if (this.settings.use_worker_threads) {
       ApplicationError.assert(this.settings.worker_filepath, 'settings.A001: worker_filepath is required when use_worker_threads is enabled!')
       this.createWorkers()
     }
+    this.startPlugins()
     // abrir conexao
     this.wamp.open()
     this.emit('start')
