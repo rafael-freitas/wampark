@@ -102,6 +102,20 @@ export function logname (dirname) {
 }
 
 
+function getDatetime (date) {
+  return [
+    date.getFullYear(), 
+    String(date.getMonth()+1).padStart(2, 0), 
+    String(date.getDate()).padStart(2, 0)
+  ].join('-')
+  +' '+
+  [
+    String(date.getHours()).padStart(2, 0),
+    String(date.getMinutes()).padStart(2, 0),
+    String(date.getSeconds()).padStart(2, 0),
+  ].join(':')
+}
+
 // function timestamp () {
 //   return moment().format('YYYY-MM-DD H:mm:ss')
 // }
@@ -125,7 +139,7 @@ function createLogger (container = 'app') {
     // return `${timestamp} [${label}] ${level}: ${message}`;
     // Return string will be passed to logger.
     const level = colors[options.level]
-    const log = [colors.gray(new Date().toGMTString())]
+    const log = [colors.gray(getDatetime(new Date()))]
 
     if (WORKER_ID !== MAIN_WORKER) {
       log.push(colors.gray(['[Worker ', WORKER_ID, ']'].join('')))
