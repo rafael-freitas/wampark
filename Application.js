@@ -113,8 +113,12 @@ class Application extends EventEmitter {
       this.createWorkers()
     }
     this.startPlugins()
+
     // abrir conexao
-    this.wamp.open()
+    if (this.wamp instanceof WampAdapter) {
+      this.wamp.open()
+    }
+
     this.emit('start')
   }
 
