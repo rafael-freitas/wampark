@@ -23,7 +23,9 @@ const WORKERS_MAX = WORKERS_LENGTH + 1
  * @date Set 23 2020
  */
 
-class Application extends EventEmitter {
+export class DevkitApplication extends EventEmitter {
+
+  status = 'created'
 
   /**
    * Conexao wamp via WampAdapter
@@ -61,11 +63,6 @@ class Application extends EventEmitter {
 
   constructor () {
     super()
-
-    if (Application.instance) {
-      return Application.instance
-    }
-    Application.instance = this
 
     // configurar o maximo de listeners do EventEmitter
     this.setMaxListeners(10000 * 10)
@@ -120,6 +117,8 @@ class Application extends EventEmitter {
     }
 
     this.emit('start')
+
+    this.status = 'ready'
   }
 
   createWorkers () {
@@ -341,6 +340,16 @@ class Application extends EventEmitter {
       proto = Object.getPrototypeOf(proto);
     }
     return false;
+  }
+}
+
+class Application extends DevkitApplication {
+  constructor() {
+    super();
+    if (Application.instance) {
+      return Application.instance
+    }
+    Application.instance = this
   }
 }
 

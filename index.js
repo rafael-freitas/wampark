@@ -1,4 +1,4 @@
-import Application from "./Application.js"
+import application, {DevkitApplication} from "./Application.js"
 import Route from "./Route.js"
 import RouteTypes from "./RouteTypes.js"
 import Component from "./Component.js"
@@ -7,9 +7,10 @@ import ApplicationError from "./ApplicationError.js"
 import logger from "./logger/index.js"
 import dotenv from 'dotenv'
 
-export default Application
+export default application
 
 export {
+  DevkitApplication,
   ApplicationError,
   WampAdapter,
   Route,

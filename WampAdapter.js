@@ -29,6 +29,7 @@ import assert from 'assert'
 import logger from './logger/index.js'
 import WampAdapterError from './WampAdapterError.js'
 import ApplicationError from './ApplicationError.js'
+import WebSocket from 'ws';
 
 export default class WampAdapter extends EventEmitter {
 
@@ -74,14 +75,24 @@ export default class WampAdapter extends EventEmitter {
       settings.authmethods = ["wampcra"]
     }
 
+    if (typeof settings.options !== "object") {
+      settings.options = {}
+    }
+
+    // configurar o factory para adicionar os headers
+    settings.options = {
+      ...settings.options,
+      factory: this.factory.bind(this),
+    }
+
+    // especificar wamp.2.json protocol para manter compatibilidade com autobahn 20.x
+    Object.assign(settings, { onchallenge, protocols: ['wamp.2.json'] }, settings)
+
     this.settings = settings
     this.autobahn = autobahn
     this.log = logger('WampAdaper')
 
     const {log} = this
-
-    // especificar wamp.2.json protocol para manter compatibilidade com autobahn 20.x
-    Object.assign(settings, { onchallenge, protocols: ['wamp.2.json'] }, settings)
 
     const connection = new autobahn.Connection(settings)
 
@@ -116,6 +127,10 @@ export default class WampAdapter extends EventEmitter {
     if (settings.autoconnect === true) {
       this.open()
     }
+  }
+
+  factory (url, protocols, headers = {}) {
+    return new WebSocket(url, protocols, { headers });
   }
 
   open () {
