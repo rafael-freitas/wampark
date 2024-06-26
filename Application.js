@@ -93,6 +93,7 @@ export class DevkitApplication extends EventEmitter {
     if (typeof settings.wamp === 'object') {
       this.connect(settings.wamp)
     }
+    this.emit('setup')
   }
 
   startPlugins () {

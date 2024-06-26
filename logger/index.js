@@ -36,7 +36,7 @@
  */
 
 import winston from 'winston'
-import cluster from 'cluster'
+import { isMainThread, threadId } from 'worker_threads'
 import path from 'path'
 // import moment from 'moment'
 import colors from 'colors/safe.js'
@@ -91,7 +91,7 @@ const loggerConfig = {
 }
 
 const MAIN_WORKER = 'main'
-const WORKER_ID = cluster.worker ? cluster.worker.id : MAIN_WORKER
+const WORKER_ID = threadId
 
 // set theme
 colors.setTheme(loggerConfig.colors)
@@ -139,16 +139,19 @@ function createLogger (container = 'app') {
     // return `${timestamp} [${label}] ${level}: ${message}`;
     // Return string will be passed to logger.
     const level = colors[options.level]
-    const log = [colors.gray(getDatetime(new Date()))]
+    const log = []
 
-    if (WORKER_ID !== MAIN_WORKER) {
-      log.push(colors.gray(['[Worker ', WORKER_ID, ']'].join('')))
-    }
+    log.push(['[', colors.gray(getDatetime(new Date())), ']'].join(''))
+
+    // if (WORKER_ID !== MAIN_WORKER) {
+    //   log.push(colors.gray(['[Worker ', WORKER_ID, ']'].join('')))
+    // }
+    log.push(colors.gray(['[Worker ', WORKER_ID, ']'].join('')))
 
     log.push(colors.cyan(['[', container, ']'].join('')))
 
     // adiciona o LEVEL do erro (INFO, DEBUG, LOG, ERROR)
-    log.push(level(options.level.toUpperCase()))
+    log.push(['[', level(options.level.toUpperCase()), ']'].join(''))
 
     typeof options.message !== 'undefined' && log.push(options.message)
 
@@ -156,7 +159,7 @@ function createLogger (container = 'app') {
       log.push('\n\t' + JSON.stringify(options.meta))
     }
 
-    return log.join(' ')
+    return log.join('')
   })
 
 
@@ -169,7 +172,7 @@ function createLogger (container = 'app') {
   // }))
 
   const formatterFile = printf(({ level, message, label, timestamp }) => {
-    return `${timestamp} [Worker ${WORKER_ID}] [${label}] ${level}: ${message}`;
+    return `${timestamp} [Worker ${WORKER_ID}][${label}]${level}: ${message}`;
   })
   
   const logger = winston.createLogger({
