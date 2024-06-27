@@ -37,7 +37,7 @@ class ApplicationLogger {
           const formattedTimestamp = colors.gray(dayjs().tz(this.timezone).format('YYYY-MM-DD HH:mm:ss'));
           const worker = colors.gray(`Worker ${String(threadId).padStart(2, ' ')}`);
           const hostname = colors.gray(this.hostname);
-          const service = colors.blue(this.service);
+          const service = colors.white(this.service);
           const app = colors.cyan(this.app);
           const levelColor = level.toUpperCase() === 'INFO' ? colors.green : level.toUpperCase() === 'ERROR' ? colors.red : colors.yellow;
           const coloredLevel = levelColor(level.toUpperCase());
@@ -55,12 +55,24 @@ class ApplicationLogger {
       ],
     });
 
-    // Dynamically add color methods
-    Object.keys(colors).forEach(color => {
-      if (typeof colors[color] === 'function') {
-        this[color] = (text) => colors[color](text);
-      }
-    });
+    // Add color methods to the class
+    this.addColorMethods();
+  }
+
+  /**
+   * Add color methods to the class.
+   */
+  addColorMethods() {
+    this.black = (text) => colors.black(text);
+    this.red = (text) => colors.red(text);
+    this.green = (text) => colors.green(text);
+    this.yellow = (text) => colors.yellow(text);
+    this.blue = (text) => colors.blue(text);
+    this.magenta = (text) => colors.magenta(text);
+    this.cyan = (text) => colors.cyan(text);
+    this.white = (text) => colors.white(text);
+    this.gray = (text) => colors.gray(text);
+    this.grey = (text) => colors.grey(text);
   }
 
   /**
