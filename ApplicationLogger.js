@@ -4,7 +4,7 @@ import timezone from 'dayjs/plugin/timezone.js';
 import utc from 'dayjs/plugin/utc.js';
 import os from 'os';
 import { threadId } from 'worker_threads';
-import colors from 'colors/safe.js'
+import colors from 'colors/safe.js';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -15,9 +15,6 @@ const { combine, printf } = format;
  * ApplicationLogger class for structured and formatted logging.
  */
 class ApplicationLogger {
-  get colors () { 
-    return colors
-  }
   /**
    * Constructor for ApplicationLogger.
    * @param {string} service - The name of the service or microservice.
@@ -40,7 +37,7 @@ class ApplicationLogger {
           const formattedTimestamp = colors.gray(dayjs().tz(this.timezone).format('YYYY-MM-DD HH:mm:ss'));
           const worker = colors.gray(`Worker ${String(threadId).padStart(2, ' ')}`);
           const hostname = colors.gray(this.hostname);
-          const service = colors.white(this.service);
+          const service = colors.blue(this.service);
           const app = colors.cyan(this.app);
           const levelColor = level.toUpperCase() === 'INFO' ? colors.green : level.toUpperCase() === 'ERROR' ? colors.red : colors.yellow;
           const coloredLevel = levelColor(level.toUpperCase());
@@ -56,6 +53,13 @@ class ApplicationLogger {
       transports: [
         new transports.Console()
       ],
+    });
+
+    // Dynamically add color methods
+    Object.keys(colors).forEach(color => {
+      if (typeof colors[color] === 'function') {
+        this[color] = (text) => colors[color](text);
+      }
     });
   }
 
