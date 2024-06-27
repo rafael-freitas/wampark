@@ -41,6 +41,7 @@
   "dependencies": {
     "autobahn": "^22.11.1",
     "colors": "^1.4.0",
+    "dayjs": "^1.11.11",
     "dotenv": "^16.4.5",
     "uuid": "^10.0.0",
     "winston": "^3.13.0"

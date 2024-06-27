@@ -21,9 +21,12 @@ export default class MyRouteSample extends Route {
   async endpoint ({args = [], kwargs = {}, details = {}}) {
     const { a, b } = kwargs
     MyRouteSample.count++
-    console.log(`[worker ${threadId}]`,'snooze a little', this.constructor.uri)
 
-    this.constructor.log.info('teste de log -> ' + this.constructor.uri)
+    this.constructor.log.warn(`Snooze a little`)
+
+    // console.log(`[worker ${threadId}]`,'snooze a little')
+
+    // this.constructor.log.info('teste de log -> ' + this.constructor.uri)
 
     // throw new ApplicationError('endpoint.A001: erro de teste')
 

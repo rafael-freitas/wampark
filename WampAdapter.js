@@ -26,10 +26,11 @@ import { Worker, isMainThread, parentPort, workerData, threadId } from 'worker_t
 import { EventEmitter } from 'events'
 import autobahn from 'autobahn'
 import assert from 'assert'
-import logger from './logger/index.js'
+// import logger from './logger/index.js'
 import WampAdapterError from './WampAdapterError.js'
 import ApplicationError from './ApplicationError.js'
 import WebSocket from 'ws';
+import ApplicationLogger from './ApplicationLogger.js'
 
 export default class WampAdapter extends EventEmitter {
 
@@ -90,7 +91,8 @@ export default class WampAdapter extends EventEmitter {
 
     this.settings = settings
     this.autobahn = autobahn
-    this.log = logger('WampAdaper')
+    // this.log = logger('WampAdaper')
+    this.log = new ApplicationLogger('Core', 'WampAdaper')
 
     const {log} = this
 
@@ -99,7 +101,11 @@ export default class WampAdapter extends EventEmitter {
     // salvar conexão na instancia do WampAdapter
     this.connection = connection
 
-    log.info(`[worker ${threadId}] Connection created for ${log.colors.yellow(settings.url)} -> realm: "${log.colors.yellow(settings.realm)}"`)
+    this.baseLogBlock = log.block('URL', settings.url).block('Realm', settings.realm)
+
+    this.baseLogBlock.info('Connection created')
+
+    // log.info(`Connection created for ${log.colors.yellow(settings.url)} -> realm: "${log.colors.yellow(settings.realm)}"`)
 
     connection.onopen = this.onOpenConnection.bind(this)
     connection.onclose = this.onCloseConnection.bind(this)
@@ -139,7 +145,9 @@ export default class WampAdapter extends EventEmitter {
 
   onOpenConnection (session) {
     const {log} = this
-    log.info(`[worker ${threadId}] Connected in ${log.colors.yellow(this.settings.url)} -> realm: "${log.colors.yellow(this.settings.realm)}" on session id (${log.colors.green(session.id)}) - ${log.ok}`)
+
+    this.baseLogBlock.block('Session', session.id).info('Connection opened')
+    // log.info(`Connected in ${log.colors.yellow(this.settings.url)} -> realm: "${log.colors.yellow(this.settings.realm)}" on session id (${log.colors.green(session.id)}) - ${log.ok}`)
 
     this.applySessionWrappers(session)
   
@@ -159,10 +167,10 @@ export default class WampAdapter extends EventEmitter {
     const {log} = this
     switch (reason) {
       case 'unreachable':
-        log.error(`[worker ${threadId}] Fail to connect to crossbar.io: "unreachable" - ${log.fail}`, details)
+        log.error(`Fail to connect to crossbar.io: "unreachable"`)
         break
       default:
-        log.warn(`[worker ${threadId}] The connection to crossbar.io was closed: ${reason}'`, details)
+        log.warn(`The connection to crossbar.io was closed: ${reason}'`)
     }
 
     // this.connection.isOpen = false

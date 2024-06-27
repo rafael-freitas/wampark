@@ -4,9 +4,10 @@ import { fileURLToPath } from 'url'
 import { dirname } from 'path'
 import { Worker, isMainThread, parentPort, workerData, threadId } from 'worker_threads'
 import Route from './Route.js'
-import logger from './logger/index.js'
+// import logger from './logger/index.js'
 import ApplicationError from './ApplicationError.js'
 import WampAdapter from './WampAdapter.js'
+import ApplicationLogger from './ApplicationLogger.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -68,7 +69,7 @@ export class DevkitApplication extends EventEmitter {
     this.setMaxListeners(10000 * 10)
 
     // default log for application
-    this.log = logger('Application')
+    this.log = new ApplicationLogger('core', 'application')
     
     this.settings = {}
 
@@ -160,7 +161,7 @@ export class DevkitApplication extends EventEmitter {
 
     this.workers.set(worker, { busy: false, safe })
 
-    this.log.info(`[worker ${threadId}] New Worker created ${worker.threadId}`)
+    this.log.info(`New Worker created ${worker.threadId}`)
 
     worker.on('message', (message) => {
       const {id, result, error} = message
@@ -264,11 +265,11 @@ export class DevkitApplication extends EventEmitter {
   connect (settings = {}) {
     // if exist a opened session ignore. Close the active connection first
     if (this.session) {
-      return console.warn('[application] There is a active WAMP connection. Close it first!')
+      return this.log.warn('There is a active WAMP connection. Close it first!')
     }
 
     if (this.settings.hasConnection) {
-      return console.warn('[application] There is already a WAMP connection confugurated! By pass!')
+      return this.log.warn('There is already a WAMP connection confugurated! By pass!')
     }
 
     this.wamp = new WampAdapter(settings)
@@ -319,12 +320,13 @@ export class DevkitApplication extends EventEmitter {
    * This route is a bridge to link the client application for backend.
    */
   attachAgentToSession () {
-    console.log('[INFO] Waiting a WAMP session begins to attach an Agent RPC route')
+    const {log} = this
+    log.info('Waiting a WAMP session begins to attach an Agent RPC route')
     this.on('wamp.session.open', (session, details) => {
       const agentSessionRouteName = `agent.${session.id}`
       // register an Agent RPC procedure for the current session
       session.register(agentSessionRouteName, (args, kwargs, details) => {
-        console.warn(`[WARN] Backend Agent is disabled for this backend session (${agentSessionRouteName})! Try to call directly`)
+        log.warn(`Backend Agent is disabled for this backend session (${agentSessionRouteName})! Try to call directly`)
       })
     })
   }

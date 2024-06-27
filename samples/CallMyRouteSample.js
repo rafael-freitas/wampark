@@ -31,7 +31,7 @@ export default class CallMyRouteSample extends Route {
     // console.log(`[worker ${threadId}]`,'result ok')
 
     // let result2 = await this.session.call('routes.myRouteSample', [], {a: 29, b: 82})
-    console.log(`[worker ${threadId}]`,'routes.myRouteSample => COUNTER --->', result)
+    this.constructor.log.info(`Counter = ${result}`)
     return result
   }
 }

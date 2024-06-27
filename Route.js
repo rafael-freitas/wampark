@@ -26,6 +26,8 @@ import normalizeError from './errors/normalizeError.js'
 import ApplicationError from './ApplicationError.js'
 import RouteTypes from './RouteTypes.js'
 import Component from './Component.js'
+import ApplicationLogger from './ApplicationLogger.js'
+
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -53,7 +55,10 @@ export default class Route {
   }
 
   static _initialize() {
-    this.log = logger(this.name)
+    // this.log = logger(this.name)
+    this.log = new ApplicationLogger('Route', this.name)
+    // this.log = application.log.block(this.name)
+
   }
 
   /**
@@ -164,7 +169,7 @@ export default class Route {
   }
 
   static _callWorkersEndpoint (session, args, kwargs, details) {
-    const log = logger(`[worker ${threadId}] ${this.uri}`)
+    // const log = logger(`${this.uri}`)
     return new Promise(async (resolve, reject) => {
       const type = this.uri
 
@@ -185,7 +190,7 @@ export default class Route {
   }
   static _registerWorker (session) {
     
-    const log = logger(`${this.uri} <worker ${threadId}>`)
+    // const log = logger(`${this.uri} <worker ${threadId}>`)
     // log.info(`Register listener on main thread`)
 
     parentPort.on('message', async (message = {}) => {
@@ -282,7 +287,9 @@ export default class Route {
    */
   static _printLogAttachFail (err) {
     const {log} = this
-    log.error(`Route <${log.colors.silly(this.uri)}> failed: ${JSON.stringify(err)} - ${log.fail}`)
+    const logBlock = this.log.block('Attach')
+    // logBlock.error(`Route <${log.colors.silly(this.uri)}> failed: ${JSON.stringify(err)}`)
+    logBlock.block('Route', this.uri, 'green').error(`Failed: ${JSON.stringify(err)}`)
     return Promise.reject(err)
   }
 
@@ -292,14 +299,20 @@ export default class Route {
    */
   static _printLogAttachSuccess (result) {
     const {log} = this
+    const logBlock = this.log.block('Attach')
     const isRegister = (this.type === RouteTypes.RPC)
     const isSubscribe = (this.type === RouteTypes.PUBSUB)
     if (isRegister) {
-      log.info(`[worker ${threadId}] Route RPC <${log.colors.silly(this.uri)}> registered - ${log.ok}`)
+      logBlock.block('RPC', this.uri, 'green').info('Registered')
+
+      // log.info(`Route RPC <${log.colors.silly(this.uri)}> registered - ${log.ok}`)
     } else if (isSubscribe) {
-      log.info(`[worker ${threadId}] Route PUBSUB <${log.colors.silly(this.uri)}> subscribed - ${log.ok}`)
+      logBlock.block('PUBSUB', this.uri, 'green').info('Subscribed')
+
+      // log.info(`Route PUBSUB <${log.colors.silly(this.uri)}> subscribed - ${log.ok}`)
     } else {
-      log.info(`[worker ${threadId}] Route HTTP <${log.colors.silly(this.uri)}> attached - ${log.ok}`)
+      logBlock.block('HTTP', this.uri, 'green').info('Attached')
+      // log.info(`Route HTTP <${log.colors.silly(this.uri)}> attached - ${log.ok}`)
     }
 
     return result

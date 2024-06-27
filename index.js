@@ -5,12 +5,14 @@ import Component from "./Component.js"
 import WampAdapter from "./WampAdapter.js"
 import ApplicationError from "./ApplicationError.js"
 import logger from "./logger/index.js"
+import ApplicationLogger from "./ApplicationLogger.js"
 import dotenv from 'dotenv'
 
 export default application
 
 export {
   DevkitApplication,
+  ApplicationLogger,
   ApplicationError,
   WampAdapter,
   Route,
