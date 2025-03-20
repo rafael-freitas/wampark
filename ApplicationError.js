@@ -13,6 +13,7 @@ import assert from 'assert'
  * @author     Rafael Freitas
  * @date       Feb 13 2018
  * @memberof module:lib/errors
+ * @updatedon  Mar 19 2025
  * @example
  * // constructor 1
  * new ApplicationError('COD001: Ocorreu um erro', customErrObj)
@@ -49,11 +50,17 @@ export default class ApplicationError extends Error {
     const ErrorClass = this
     // encapsular o metodo assert() para usar a instancia da classe ApplicationError invés de classe nativa AssertionError
     const assertation = (test, message) => {
-      assert(test, new ErrorClass({
+      let err = {
         message,
-        // copiar o valor static family para a nova instancia
         family: this.family || 'assert'
-      }))
+      }
+      if (typeof message === 'object') {
+        err = {
+          ...message,
+          family: message.family || 'assert'
+        }
+      }
+      assert(test, new ErrorClass(err))
     }
 
     // criar warppers dinamicos para cada metodo da lib assert passando convertendo a string de messagem em uma instancia da classe de erro
