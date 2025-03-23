@@ -3,7 +3,8 @@ import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone.js';
 import utc from 'dayjs/plugin/utc.js';
 import os from 'os';
-import { threadId } from 'worker_threads';
+import { threadId, isMainThread } from 'worker_threads';
+import cluster from 'node:cluster';
 import colors from 'colors/safe.js';
 
 dayjs.extend(utc);
@@ -34,8 +35,22 @@ class ApplicationLogger {
       level: 'info',
       format: combine(
         printf(({ level, message }) => {
+          let workerType = 'Worker'
+          let workerId = String(process.pid)
+
+          if (cluster.isPrimary && isMainThread) {
+            workerType = 'Master'
+            // workerId = `0`
+          }
+          else {
+            workerId = String(process.pid)
+            if (!isMainThread) {
+              workerType = 'Thread'
+              workerId = process.pid + `/` + threadId
+            }
+          }
+          const worker = colors.gray(`${workerType} ${String(workerId).padStart(5, ' ')}`);
           const formattedTimestamp = colors.gray(dayjs().tz(this.timezone).format('YYYY-MM-DD HH:mm:ss'));
-          const worker = colors.gray(`Worker ${String(threadId).padStart(2, ' ')}`);
           const hostname = colors.gray(this.hostname);
           const service = colors.white(this.service);
           const app = colors.cyan(this.app);
