@@ -127,7 +127,9 @@ export default class Route {
 
     // ApplicationError.assert.object(this.settings, '_registerEndpoint.A001: settings must be an object')
 
-    const {uri, type, options} = this
+    const {uri, type, options = {}} = this
+
+    options.invoke = 'roundrobin'
     
     ApplicationError.assert.string(uri, '_registerEndpoint.A001: uri must be a string')
     ApplicationError.assert.string(type, '_registerEndpoint.A001: settings.type must be a string')
